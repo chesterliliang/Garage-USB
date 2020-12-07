@@ -126,10 +126,16 @@ namespace Garage_USB
                 if (cv[1] < 1) 
                 {
                     Console.WriteLine("Power up but no current!");
-                    call_fail(-2);
+                    call_fail(def.BIN_CODE_F2);
                     return;
                 }
-                    
+                if (cv[1] > 100)
+                {
+                    Console.WriteLine("too much current!");
+                    call_fail(def.BIN_CODE_F4);
+                    return;
+                }
+
             }
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
@@ -155,9 +161,7 @@ namespace Garage_USB
             ui_tr.Start();
             rtn = device.download_firmware(firmware_path);
             ui_tr.Stop();
-            //set_process(def.stage_download, def.RTN_OK);
 
-            
             if(rtn==def.RTN_OK)
             {
                 set_process(def.stage_download, def.RTN_OK);
@@ -165,7 +169,7 @@ namespace Garage_USB
             else
             {
                 set_process(def.stage_download, def.RTN_FAIL);
-                call_fail(-3);
+                call_fail(def.BIN_CODE_F3);
                 return;
             }
                
@@ -199,13 +203,13 @@ namespace Garage_USB
                 if (cv2[1] < 1)
                 {
                     Console.WriteLine("Power up but no current!");
-                    call_fail(-2);
+                    call_fail(def.BIN_CODE_F2);
                     return;
                 }
                 if (cv2[1] > 30)
                 {
                     Console.WriteLine("cos too much porwer!");
-                    call_fail(6);
+                    call_fail(def.BIN_CODE_F4);
                     return;
                 }
 
@@ -363,7 +367,10 @@ namespace Garage_USB
                 press_counter--;
             }
             if (average_check(frame_data) == def.RTN_FAIL)
+            {
                 return;
+            }
+               
 
             if (check_result())
             {

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30711.63
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Garage-USB", "Garage-USB\Garage-USB.csproj", "{FC55E2EB-8003-499A-B09E-DE0D4E3B8EF0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FC55E2EB-8003-499A-B09E-DE0D4E3B8EF0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC55E2EB-8003-499A-B09E-DE0D4E3B8EF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC55E2EB-8003-499A-B09E-DE0D4E3B8EF0}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FC55E2EB-8003-499A-B09E-DE0D4E3B8EF0}.Debug|x86.Build.0 = Debug|Any CPU
+		{FC55E2EB-8003-499A-B09E-DE0D4E3B8EF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC55E2EB-8003-499A-B09E-DE0D4E3B8EF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC55E2EB-8003-499A-B09E-DE0D4E3B8EF0}.Release|x86.ActiveCfg = Release|Any CPU
+		{FC55E2EB-8003-499A-B09E-DE0D4E3B8EF0}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5AC73DA6-55AD-49C0-BF4D-0852CC6337E2}
+	EndGlobalSection
+EndGlobal

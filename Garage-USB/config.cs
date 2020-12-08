@@ -20,5 +20,7 @@ namespace Garage_USB
         public static string keycode = "";
         public static string comport = "";
         public static int sw_gain = 48;
+        public static int firmware_type = 0;
+        public static int dev_type = 0;
     }
 }

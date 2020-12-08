@@ -37,6 +37,13 @@ namespace Garage_USB
         public static byte[] usb_en_high = { 0xa5, 0x00, 0x09, channel, 0x08, 0x00, 0x01, 0xAA, 0xAA };//6
         //a5000901080002aaaa
         public static byte[] usb_en_low = { 0xa5, 0x00, 0x09, channel, 0x08, 0x00, 0x02, 0xAA, 0xAA };//7
+
+        //a5000901060001aaaa
+        public static byte[] button_monitor_start = { 0xa5, 0x00, 0x09, channel, 0x06, 0x00, 0x01, 0xAA, 0xAA };//8
+        //a5000901060001aaaa
+        public static byte[] button_monitor_pull = { 0xa5, 0x00, 0x09, channel, 0x06, 0x00, 0x02, 0xAA, 0xAA };//9
+        //a5000901060001aaaa
+        public static byte[] button_monitor_stop = { 0xa5, 0x00, 0x09, channel, 0x06, 0x00, 0x03, 0xAA, 0xAA };//10
         public control()
         {
         }
@@ -143,6 +150,47 @@ namespace Garage_USB
             float c_f = (float)c_i;
             array[1] = c_f;
             return array;
+        }
+
+        public int wait_button(int timeout_ms)
+        {
+            int got = 0;
+            byte[] readBuffer = null;
+            int count = 0;
+      
+            //pull
+            while (timeout_ms>0 || timeout_ms<0)
+            {
+                try
+                {
+                    sp.Write(button_monitor_start, 0, 9);
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine("fn_power_up write fail " + err.Message);
+                    return def.RTN_FAIL;
+                }
+                while (sp.BytesToRead == 0)
+                {
+                    Thread.Sleep(1);
+                }
+                readBuffer = new byte[sp.ReadBufferSize + 1];
+                count = sp.Read(readBuffer, 0, sp.ReadBufferSize);
+                int status = (int)readBuffer[4];
+                if(status==1)
+                {
+                    got = 1;
+                    break;
+                }
+                if(timeout_ms>0)
+                    timeout_ms--;
+                Thread.Sleep(1);
+            }
+
+            if (got == 1)
+                return def.RTN_OK;
+
+            return def.RTN_FAIL;
         }
     }
 }

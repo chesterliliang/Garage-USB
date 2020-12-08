@@ -23,25 +23,25 @@ namespace Garage_USB
         }
 
         [DllImport("product.dll", EntryPoint = "PAPRO_WriteSN", CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe int PAPRO_WriteSN(char[] sSN);
-        public static int set_sn_activiate(string sn)
+        public static extern unsafe int PAPRO_WriteSN(char[] sSN, int dev_type);
+        public static int set_sn_activiate(string sn, int dev_type)
         {
             int rtn = ERR_FAIL;
             char[] sn_c = sn.ToCharArray();
             Console.WriteLine("enter set_sn_activiate!");
-            rtn = PAPRO_WriteSN(sn_c);
+            rtn = PAPRO_WriteSN(sn_c, dev_type);
             Console.WriteLine("leave set_sn_activiate ! rv = 0x" + String.Format("{0:X000}", rtn));
             return rtn;
         }
 
         [DllImport("product.dll", EntryPoint = "PAPRO_Connect", CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe int PAPRO_Connect();
+        public static extern unsafe int PAPRO_Connect(int type);
 
-        public static int connect()
+        public static int connect(int type)
         {
             int rtn = ERR_FAIL;
-            Console.WriteLine("enter connet!");
-            rtn = PAPRO_Connect();
+            Console.WriteLine("enter connet! "+ type.ToString());
+            rtn = PAPRO_Connect(type);
             Console.WriteLine("leave connet! rv = 0x" + String.Format("{0:X000}", rtn));
             return rtn;
 
@@ -76,10 +76,11 @@ namespace Garage_USB
         public static int capture_frame(int mode, byte[] frame)
         {
             int rtn = ERR_FAIL;
-            Console.WriteLine("enter capture_frame! mode="+mode.ToString());
+            //Console.WriteLine("enter capture_frame! mode="+mode.ToString());
             char c = (char)mode;
             rtn = PAPRO_Capture_Frame(c,frame);
-            Console.WriteLine("leave capture_frame! rv = 0x" + String.Format("{0:X000}", rtn));
+            if(rtn==ERR_FAIL)
+                Console.WriteLine("leave capture_frame! rv = 0x" + String.Format("{0:X000}", rtn));
             return rtn;
         }
 
@@ -102,12 +103,12 @@ namespace Garage_USB
         public static extern unsafe int PAPRO_COSinfo( char mode, byte[] info);
 
         [DllImport("product.dll", EntryPoint = "PAPRO_GetVersion", CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe int PAPRO_GetVersion(byte[] version);
-        public static int version(byte[] version)
+        public static extern unsafe int PAPRO_GetVersion(byte[] version, ref int len);
+        public static int version(byte[] version, ref int len)
         {
             int rtn = ERR_FAIL;
             Console.WriteLine("enter version!");
-            rtn = PAPRO_GetVersion(version);
+            rtn = PAPRO_GetVersion(version,ref len);
             Console.WriteLine("leave version! rv = 0x" + String.Format("{0:X000}", rtn));
             return rtn;
         }

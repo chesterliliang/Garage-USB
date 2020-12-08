@@ -46,6 +46,7 @@ namespace Garage_USB
             this.btn_com = new System.Windows.Forms.Button();
             this.tb_com = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.cb_mp = new System.Windows.Forms.CheckBox();
             this.btn_get_cv = new System.Windows.Forms.Button();
             this.btn_led_0 = new System.Windows.Forms.Button();
             this.btn_led_1 = new System.Windows.Forms.Button();
@@ -105,7 +106,7 @@ namespace Garage_USB
             this.btn_start.Name = "btn_start";
             this.btn_start.Size = new System.Drawing.Size(760, 56);
             this.btn_start.TabIndex = 0;
-            this.btn_start.Text = "start";
+            this.btn_start.Text = "Start and Click";
             this.btn_start.UseVisualStyleBackColor = true;
             this.btn_start.Click += new System.EventHandler(this.btn_start_Click);
             // 
@@ -278,6 +279,7 @@ namespace Garage_USB
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.cb_mp);
             this.groupBox3.Controls.Add(this.btn_get_cv);
             this.groupBox3.Controls.Add(this.btn_led_0);
             this.groupBox3.Controls.Add(this.btn_led_1);
@@ -297,6 +299,17 @@ namespace Garage_USB
             this.groupBox3.TabIndex = 19;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "setting";
+            // 
+            // cb_mp
+            // 
+            this.cb_mp.AutoSize = true;
+            this.cb_mp.Location = new System.Drawing.Point(709, 35);
+            this.cb_mp.Name = "cb_mp";
+            this.cb_mp.Size = new System.Drawing.Size(42, 20);
+            this.cb_mp.TabIndex = 51;
+            this.cb_mp.Text = "MP";
+            this.cb_mp.UseVisualStyleBackColor = true;
+            this.cb_mp.CheckedChanged += new System.EventHandler(this.cb_mp_CheckedChanged);
             // 
             // btn_get_cv
             // 
@@ -900,6 +913,7 @@ namespace Garage_USB
         private System.Windows.Forms.TextBox tb_gain;
         private System.Windows.Forms.Button btn_clear;
         private System.Windows.Forms.Button btn_get_cv;
+        private System.Windows.Forms.CheckBox cb_mp;
     }
 }
 

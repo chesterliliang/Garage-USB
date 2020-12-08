@@ -47,5 +47,10 @@ namespace Garage_USB
         public static int BIN_CODE_21 = 21;//AVG fail
         public static int BIN_CODE_22 = 22;//RV FAIL
         public static string firmware_file = "_pxat_fm.bin";
+
+        public static int COSTYPE_USB_MOH_F323 = 64;
+        public static int DEVTYPE_USB_MOH_F323 = 23;
+        public static int COSTYPE_USB_MOCH_MOH_BLD = 54;
+        public static int DEVTYPE_USB_MOCH_MOH_BLD = 29;
     }
 }

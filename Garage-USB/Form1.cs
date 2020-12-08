@@ -28,10 +28,13 @@ namespace Garage_USB
         ThreadStart threadLive = null;
         int live_state = 0;
         ThreadStart threadPress = null;
+        ThreadStart threadMP = null;
+        int working = 0;
 
         Thread thread = null;
         Thread thread_live = null;
         Thread thread_press = null;
+        Thread thread_mp = null;
         int press_counter = 0;
         DataTable dt = new DataTable();
         DataTable dt_config = new DataTable();
@@ -49,11 +52,13 @@ namespace Garage_USB
             threadStart = new ThreadStart(do_prime);
             threadLive = new ThreadStart(do_preview);
             threadPress = new ThreadStart(do_press);
+            threadMP = new ThreadStart(do_mp);
             Console.WriteLine("App start up!");
 
             load_config();
             open_create_log();
             firmware_path = Application.StartupPath + @"\" + config.keycode + def.firmware_file;
+            Console.WriteLine("firmware path = " + firmware_path);
             //init bmp template
             bmp_helper.init(config.sensor_width, config.sensor_height, Application.StartupPath + def.template_name);
             
@@ -80,43 +85,89 @@ namespace Garage_USB
             else
                 tb_com.BackColor = Color.Red;
 
+            btn_start.BackColor = Color.White;
+
 
         }
         private void init_lbs()
         {
-            lb_voltage.Text = "-1";
-            lb_current.Text = "-1";
-            lb_sn.Text = "-1";
-            lb_parameter.Text = "-1";
-            lb_version.Text = "-1";
-            lb_rv.Text = "-1";
-            lb_graylevel.Text = "-1";
-            lb_bin.Text = "-1";
+            this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
+            {
+                lb_voltage.Text = "-1";
+                lb_current.Text = "-1";
+                lb_sn.Text = "-1";
+                lb_parameter.Text = "-1";
+                lb_version.Text = "-1";
+                lb_rv.Text = "-1";
+                lb_graylevel.Text = "-1";
+                lb_bin.Text = "-1";
+            }));
         }
         private void init_tips()
         {
-            btn_result.BackColor = Color.White;
-            btn_tip_blink.BackColor = Color.White;
-            btn_result.Text = "Working";
+            this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
+            {
+                btn_result.BackColor = Color.White;
+                btn_tip_blink.BackColor = Color.White;
+                btn_result.Text = "Working";
+            }));
+           
         }
         private void btn_start_Click(object sender, EventArgs e)
         {
-            //btn_start.Enabled = false;
-            if (thread != null)
-                return;
-            set_process(def.stage_start, def.RTN_OK);
-            init_tips();
-            init_lbs();
-            img_preview.Image = null;
-
-            if (thread == null)
+            
+            if(cb_mp.Checked==false)
+            {
+                btn_start.BackColor = Color.Blue;
+                if (thread != null)
+                    return;
                 thread = new Thread(threadStart);
-            thread.Start();
+                thread.Start();
+            }
+            else
+            {
+                if (thread_mp != null)
+                    return;
+
+                thread_mp = new Thread(threadMP);
+                thread_mp.Start();
+            }
+           
+        }
+
+        public void do_mp()
+        {
+            int rtn = 0;
+            while(cb_mp.Checked==true)
+            {
+                if (working == 1)
+                    continue;
+
+                btn_start.BackColor = Color.Purple;
+                rtn = con.wait_button(-1);
+                if (rtn == def.RTN_OK)
+                    do_prime();
+            }
+            thread_mp = null;
         }
 
         public  void do_prime()
         {
             int rtn = device.ERR_FAIL;
+            working = 1;
+            set_process(def.stage_start, def.RTN_OK);
+            init_tips();
+            init_lbs();
+            img_preview.Image = null;
+
+            rtn = con.wait_button(2000);
+            if(rtn==def.RTN_FAIL)
+            {
+                call_fail(def.BIN_CODE_19);
+                return;
+            }
+
+
             event_device_changed = 0;
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP) ;
             Thread.Sleep(50);
@@ -228,7 +279,7 @@ namespace Garage_USB
             {
                 Thread.Sleep(1);
                 wait_cos_plugin_counter++;
-                if(wait_cos_plugin_counter>3000)
+                if(wait_cos_plugin_counter>4000)
                 {
                     Console.WriteLine("change device counter timeout");
                     break;
@@ -242,10 +293,10 @@ namespace Garage_USB
                 btn_tip_calibrate.BackColor = Color.Yellow;
             }));
             
-            Thread.Sleep(3000);
+            Thread.Sleep(500);
  
             rtn = device.disconnect();
-            rtn = device.connect();
+            rtn = device.connect(config.firmware_type);
             if(rtn!=device.ERR_OK)
             {
                 Console.WriteLine("thread connect after restart failed");
@@ -255,8 +306,9 @@ namespace Garage_USB
                 return;
             }
 
-           /* byte[] version = new byte[64];
-            rtn = device.version(version);
+           byte[] version = new byte[64];
+           int len = 64;
+            rtn = device.version(version,ref len);
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread version after restart failed");
@@ -269,9 +321,9 @@ namespace Garage_USB
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
                 lb_version.Text = strversion;
-            }));*/
+            }));
 
-            rtn = device.set_sn_activiate(device.gen_sn(config.station,config.keycode));
+            rtn = device.set_sn_activiate(device.gen_sn(config.station,config.keycode),config.dev_type);
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread set_sn_activiate after restart failed");
@@ -284,8 +336,8 @@ namespace Garage_USB
             
 
             byte[] info = new byte[38];
-            int len = 0;
-            rtn = device.devinfo(info, ref len);
+            int len_info = 0;
+            rtn = device.devinfo(info, ref len_info);
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread devinfo after restart failed");
@@ -384,7 +436,10 @@ namespace Garage_USB
             {
                 lb_pf.Text = ram_counter_good.ToString() + "/" + ram_counter_bad.ToString();
             }));
+            Thread.Sleep(1500);
+            btn_start.BackColor = Color.White;
             thread = null;
+            working = 0;
         }
 
         public int get_all_info(int mode)
@@ -442,8 +497,9 @@ namespace Garage_USB
                 lb_sn.Text = strsn;
             }));
 
-            byte[] version = new byte[20];
-            rtn = device.version(version);
+            byte[] version = new byte[64];
+            int len_version = 64;
+            rtn = device.version(version,ref len_version);
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread version after restart failed");
@@ -700,7 +756,7 @@ namespace Garage_USB
                 lb_bin.Text = code.ToString();
                 btn_result.BackColor = Color.Red;
                 btn_result.Text = "Fail";
-                if (code != -2)
+                if (code != -2&& code !=19)
                 {
                     log_info();
                 }
@@ -714,9 +770,12 @@ namespace Garage_USB
                         lb_pf.Text = ram_counter_good.ToString() + "/" + ram_counter_bad.ToString();
                     }));
                 }
+                btn_start.BackColor = Color.White;
                 thread = null;
+                working = 0;
                 ui_tr.Stop();
             }));
+            Thread.Sleep(1500);
         }
             private void set_process(int stage,int code)
         {
@@ -834,6 +893,17 @@ namespace Garage_USB
             config.version = dt_config.Rows[0]["Version"].ToString();
             config.station = Convert.ToInt32(dt_config.Rows[0]["Station"]);
             config.keycode = dt_config.Rows[0]["Keycode"].ToString();
+            if (config.keycode == "3230")
+            {
+                config.firmware_type = def.COSTYPE_USB_MOH_F323;
+                config.dev_type = def.DEVTYPE_USB_MOH_F323;
+            }    
+            else
+            {
+                config.firmware_type = def.COSTYPE_USB_MOCH_MOH_BLD;
+                config.dev_type = def.DEVTYPE_USB_MOCH_MOH_BLD;
+            }
+
             config.comport = dt_config.Rows[0]["comport"].ToString();
             config_fs.Close();
             Console.WriteLine("config loaded !");
@@ -936,7 +1006,7 @@ namespace Garage_USB
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP);
             Thread.Sleep(1500);
             device.disconnect();
-            int rtn = device.connect();
+            int rtn = device.connect(config.firmware_type);
             rtn = device.get_bg(bkg_img);
             thread_live = new Thread(threadLive);
             thread_live.Start();
@@ -972,7 +1042,7 @@ namespace Garage_USB
             set_process(def.stage_calibrate, def.RTN_OK);
 
             device.disconnect();
-            int rtn = device.connect();
+            int rtn = device.connect(config.firmware_type);
             if(rtn==def.RTN_FAIL)
             {
                 Console.WriteLine("thread press connect failed");
@@ -1052,7 +1122,7 @@ namespace Garage_USB
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP);
             Thread.Sleep(1500);
             device.disconnect();
-            int rtn = device.connect();
+            int rtn = device.connect(config.firmware_type);
             if (rtn == def.RTN_FAIL)
             {
                 Console.WriteLine(" btn_read_Click connect failed");
@@ -1094,6 +1164,21 @@ namespace Garage_USB
         private void btn_get_cv_Click(object sender, EventArgs e)
         {
              get_all_info(0);
+        }
+
+        private void cb_mp_CheckedChanged(object sender, EventArgs e)
+        {
+            if(cb_mp.Checked == true)
+            {
+                btn_start.Text = "Click Button to Start";
+                btn_start.BackColor = Color.White;
+            }  
+            else
+            {
+                btn_start.Text = "Start and Click";
+                btn_start.BackColor = Color.White;
+            }
+                
         }
     }
 }

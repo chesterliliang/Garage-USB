@@ -303,9 +303,12 @@ namespace Garage_USB
             // cb_mp
             // 
             this.cb_mp.AutoSize = true;
+            this.cb_mp.Checked = true;
+            this.cb_mp.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.cb_mp.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.cb_mp.Location = new System.Drawing.Point(709, 35);
             this.cb_mp.Name = "cb_mp";
-            this.cb_mp.Size = new System.Drawing.Size(42, 20);
+            this.cb_mp.Size = new System.Drawing.Size(44, 19);
             this.cb_mp.TabIndex = 51;
             this.cb_mp.Text = "MP";
             this.cb_mp.UseVisualStyleBackColor = true;

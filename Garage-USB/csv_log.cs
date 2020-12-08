@@ -9,6 +9,7 @@ namespace Garage_USB
 {
     public class csv_log
     {
+        public static string path;
         public static void gen_table(string path, DataTable dt)
         {
             dt.Columns.Add("ID", System.Type.GetType("System.Int32"));
@@ -33,11 +34,11 @@ namespace Garage_USB
 
         }
 
-        public static void save_bmp(string path, int sequ,byte[] data, string exname)
+        public static void save_bmp(string name,byte[] data)
         {
-            string str = path + @"\img\"+sequ.ToString()+exname+".bmp";
+            string str = path + name + ".bmp";
             FileStream fs = new FileStream(str, FileMode.OpenOrCreate);
-            fs.Write(data, 0, 1078 + 9216);
+            fs.Write(data, 0, 1078 + config.sensor_width*config.sensor_height);
             fs.Close();
         }
 

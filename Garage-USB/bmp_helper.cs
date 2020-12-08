@@ -62,6 +62,7 @@ namespace Garage_USB
             Buffer.BlockCopy(buf, 0, bmp, header_len, width * height);
             if(gain>0)
                 fpimage.gain_image(bmp, bmp, gain);
+
             MemoryStream ms = new MemoryStream(bmp);
             Image image = Image.FromStream(ms);
             return image;

@@ -49,11 +49,11 @@ namespace Garage_USB
         public Form1()
         {
             InitializeComponent();
+            Console.WriteLine("App start up!");
             threadStart = new ThreadStart(do_prime);
             threadLive = new ThreadStart(do_preview);
             threadPress = new ThreadStart(do_press);
             threadMP = new ThreadStart(do_mp);
-            Console.WriteLine("App start up!");
 
             load_config();
             open_create_log();
@@ -61,7 +61,11 @@ namespace Garage_USB
             Console.WriteLine("firmware path = " + firmware_path);
             //init bmp template
             bmp_helper.init(config.sensor_width, config.sensor_height, Application.StartupPath + def.template_name);
-            
+
+            csv_log.path = Application.StartupPath + @"\img\";
+            Console.WriteLine("img storage path = " + csv_log.path);
+
+
             bkg_img = new byte[config.sensor_width * config.sensor_height];
             //set 
             ui_tr.AutoReset = true;
@@ -86,6 +90,7 @@ namespace Garage_USB
                 tb_com.BackColor = Color.Red;
 
             btn_start.BackColor = Color.White;
+            btn_start.Text = "Click Button to Start";
 
 
         }
@@ -122,6 +127,7 @@ namespace Garage_USB
                 if (thread != null)
                     return;
                 thread = new Thread(threadStart);
+                thread.IsBackground = true;
                 thread.Start();
             }
             else
@@ -130,6 +136,7 @@ namespace Garage_USB
                     return;
 
                 thread_mp = new Thread(threadMP);
+                thread_mp.IsBackground = true;
                 thread_mp.Start();
             }
            
@@ -587,6 +594,8 @@ namespace Garage_USB
             else
                 avg_img = bmp_helper.format_from_bytes(frame_data, 0);
 
+            avg_img.Save(csv_log.path + lb_sn.Text + ".bmp");
+
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
                 img_preview.Image = avg_img;
@@ -1009,6 +1018,7 @@ namespace Garage_USB
             int rtn = device.connect(config.firmware_type);
             rtn = device.get_bg(bkg_img);
             thread_live = new Thread(threadLive);
+            thread_live.IsBackground = true;
             thread_live.Start();
             Console.WriteLine("Working thread started ");
 
@@ -1073,6 +1083,7 @@ namespace Garage_USB
             }
 
             thread_press = new Thread(threadPress);
+            thread_press.IsBackground = true;
             thread_press.Start();
         }
 

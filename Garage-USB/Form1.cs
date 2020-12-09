@@ -42,7 +42,7 @@ namespace Garage_USB
         string log_path = "";
         int ram_counter_good = 0;
         int ram_counter_bad = 0;
-        control con = new control();
+        control con;
         int event_device_changed = 0;
         string firmware_path = "";
 
@@ -56,6 +56,7 @@ namespace Garage_USB
             threadMP = new ThreadStart(do_mp);
 
             load_config();
+            con = new control();
             open_create_log();
             firmware_path = Application.StartupPath + @"\" + config.keycode + def.firmware_file;
             Console.WriteLine("firmware path = " + firmware_path);
@@ -91,6 +92,13 @@ namespace Garage_USB
 
             btn_start.BackColor = Color.White;
             btn_start.Text = "Click Button to Start";
+            if(config.auto_start==1)
+            {
+                Console.WriteLine("auto started!");
+                thread_mp = new Thread(threadMP);
+                thread_mp.IsBackground = true;
+                thread_mp.Start();
+            }
 
 
         }
@@ -264,7 +272,7 @@ namespace Garage_USB
                     call_fail(def.BIN_CODE_F2);
                     return;
                 }
-                if (cv2[1] > 30)
+                if (cv2[1] > 100)
                 {
                     Console.WriteLine("cos too much porwer!");
                     call_fail(def.BIN_CODE_F4);
@@ -902,6 +910,8 @@ namespace Garage_USB
             config.version = dt_config.Rows[0]["Version"].ToString();
             config.station = Convert.ToInt32(dt_config.Rows[0]["Station"]);
             config.keycode = dt_config.Rows[0]["Keycode"].ToString();
+            config.channel = Convert.ToInt32(dt_config.Rows[0]["Channel"]);
+            config.auto_start = Convert.ToInt32(dt_config.Rows[0]["auto_start"]);
             if (config.keycode == "3230")
             {
                 config.firmware_type = def.COSTYPE_USB_MOH_F323;

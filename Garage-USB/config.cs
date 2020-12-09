@@ -22,5 +22,7 @@ namespace Garage_USB
         public static int sw_gain = 48;
         public static int firmware_type = 0;
         public static int dev_type = 0;
+        public static int channel = 0;
+        public static int auto_start = 0;
     }
 }

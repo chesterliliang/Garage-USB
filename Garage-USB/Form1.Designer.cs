@@ -242,12 +242,12 @@ namespace Garage_USB
             this.btn_result.BackColor = System.Drawing.Color.White;
             this.btn_result.Enabled = false;
             this.btn_result.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_result.Font = new System.Drawing.Font("Arial", 21.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.btn_result.Font = new System.Drawing.Font("微软雅黑", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.btn_result.Location = new System.Drawing.Point(12, 278);
             this.btn_result.Name = "btn_result";
             this.btn_result.Size = new System.Drawing.Size(593, 56);
             this.btn_result.TabIndex = 18;
-            this.btn_result.Text = "RESULT";
+            this.btn_result.Text = "等待開始";
             this.btn_result.UseVisualStyleBackColor = false;
             // 
             // label7
@@ -354,7 +354,7 @@ namespace Garage_USB
             this.btn_s0_0.Name = "btn_s0_0";
             this.btn_s0_0.Size = new System.Drawing.Size(75, 23);
             this.btn_s0_0.TabIndex = 46;
-            this.btn_s0_0.Text = "S1_0";
+            this.btn_s0_0.Text = "S0_0";
             this.btn_s0_0.UseVisualStyleBackColor = true;
             this.btn_s0_0.Click += new System.EventHandler(this.btn_s0_0_Click);
             // 
@@ -838,7 +838,7 @@ namespace Garage_USB
             this.Controls.Add(this.btn_tip_blink);
             this.Font = new System.Drawing.Font("Arial Narrow", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.Name = "Form1";
-            this.Text = " Garage-USB PixelAuth 0.9.9";
+            this.Text = " Garage-USB PixelAuth 1.0.0 pre";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Enter += new System.EventHandler(this.btn_start_Click);
             this.groupBox1.ResumeLayout(false);

@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Timers;
-using System.Threading;
 using System.IO;
-using System.IO.Ports;
+using System.Linq;
+using System.Threading;
+using System.Timers;
+using System.Windows.Forms;
 
 
 
@@ -92,7 +87,11 @@ namespace Garage_USB
 
             btn_start.BackColor = Color.White;
             btn_start.Text = "Click Button to Start";
-            if(config.auto_start==1)
+
+            con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
+            con.switch_control((int)control.COMMAND.USB, (int)control.MODE.UP);
+            con.switch_control((int)control.COMMAND.S0, (int)control.MODE.UP);
+            if (config.auto_start==1)
             {
                 Console.WriteLine("auto started!");
                 thread_mp = new Thread(threadMP);
@@ -122,7 +121,7 @@ namespace Garage_USB
             {
                 btn_result.BackColor = Color.White;
                 btn_tip_blink.BackColor = Color.White;
-                btn_result.Text = "Working";
+                btn_result.Text = "作業中--勿碰模組";
             }));
            
         }
@@ -153,15 +152,57 @@ namespace Garage_USB
         public void do_mp()
         {
             int rtn = 0;
-            while(cb_mp.Checked==true)
+            con.should_leave = 0;
+            con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
+            con.switch_control((int)control.COMMAND.USB, (int)control.MODE.UP);
+            con.switch_control((int)control.COMMAND.S0, (int)control.MODE.UP);
+
+            while (cb_mp.Checked==true)
             {
                 if (working == 1)
                     continue;
 
                 btn_start.BackColor = Color.Purple;
+
+                this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
+                {
+                    btn_result.Text = "推-開始按鈕";
+                }));
+
+                Thread.Sleep(1000);
+
+                /*rtn = con.wait_start_key(-1);
+                if (rtn == def.RTN_FAIL)
+                {
+                    call_fail(def.BIN_CODE_15);
+                    return;
+                }*/
+                set_process(def.stage_start, def.RTN_OK);
+                init_tips();
+                init_lbs();
+                img_preview.Image = null;
+
+                rtn = con.check_button_short();
+                if (rtn == def.RTN_FAIL)
+                {
+                    call_fail(def.BIN_CODE_16);
+                    return;
+                }
+
+                this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
+                {
+                    btn_result.Text = "壓-模組按鍵";
+                }));
+
                 rtn = con.wait_button(-1);
                 if (rtn == def.RTN_OK)
                     do_prime();
+                else
+                {
+                    call_fail(def.BIN_CODE_18);
+                    return;
+                }
+
             }
             thread_mp = null;
         }
@@ -175,27 +216,27 @@ namespace Garage_USB
             init_lbs();
             img_preview.Image = null;
 
-            rtn = con.wait_button(2000);
-            if(rtn==def.RTN_FAIL)
-            {
-                call_fail(def.BIN_CODE_19);
-                return;
-            }
-
-
             event_device_changed = 0;
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP) ;
             Thread.Sleep(50);
+
+            rtn = con.fn_check_current();
+            if (rtn == def.RTN_FAIL)
+            {
+                call_fail(def.BIN_CODE_17);
+                return;
+            }
+
             float[] cv = con.fn_get_cv();
             if(cv!=null)
             {
-                if (cv[1] < 1) 
+                if (cv[1] < 1) //pin connect fail
                 {
                     Console.WriteLine("Power up but no current!");
                     call_fail(def.BIN_CODE_F2);
                     return;
                 }
-                if (cv[1] > 100)
+                if (cv[1] > 100)//<50
                 {
                     Console.WriteLine("too much current!");
                     call_fail(def.BIN_CODE_F4);
@@ -244,21 +285,14 @@ namespace Garage_USB
 
             event_device_changed = 0;
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
-            int loader_leave_counter = 0;
-            while (event_device_changed < 1)
-            {
-                Thread.Sleep(1);
-                loader_leave_counter++;
-                if (loader_leave_counter > 1500)
-                    break;
-            }
+
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
                 btn_tip_restart.BackColor = Color.Yellow;
             }));
-            event_device_changed = 0;
+            //event_device_changed = 0;
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP);
-            Thread.Sleep(50);
+            Thread.Sleep(300);
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
                 btn_tip_restart.BackColor = Color.Blue;
@@ -272,7 +306,7 @@ namespace Garage_USB
                     call_fail(def.BIN_CODE_F2);
                     return;
                 }
-                if (cv2[1] > 100)
+                if (cv2[1] > 100)//<30
                 {
                     Console.WriteLine("cos too much porwer!");
                     call_fail(def.BIN_CODE_F4);
@@ -294,7 +328,7 @@ namespace Garage_USB
             {
                 Thread.Sleep(1);
                 wait_cos_plugin_counter++;
-                if(wait_cos_plugin_counter>4000)
+                if(wait_cos_plugin_counter>4000)// clear sensor
                 {
                     Console.WriteLine("change device counter timeout");
                     break;
@@ -308,7 +342,7 @@ namespace Garage_USB
                 btn_tip_calibrate.BackColor = Color.Yellow;
             }));
             
-            Thread.Sleep(500);
+            Thread.Sleep(2000);// cut down
  
             rtn = device.disconnect();
             rtn = device.connect(config.firmware_type);
@@ -416,7 +450,10 @@ namespace Garage_USB
             }));
             //restart and calbrate
             //======================================================//
-
+            this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
+            {
+                btn_result.Text = "拉-橡膠手柄-確保到位";
+            }));
             press_counter = 120;
             ui_tr.Start();
             byte[] frame_data = new byte[config.sensor_width * config.sensor_height];
@@ -621,7 +658,7 @@ namespace Garage_USB
             }
             if (rv < config.rv_th)
             {
-                call_fail(def.BIN_CODE_21);
+                call_fail(def.BIN_CODE_22);
                 Console.WriteLine("press failed rv=" + rv.ToString());
                 set_process(def.stage_press, def.RTN_FAIL);
                 return def.RTN_FAIL;
@@ -1198,6 +1235,8 @@ namespace Garage_USB
             {
                 btn_start.Text = "Start and Click";
                 btn_start.BackColor = Color.White;
+                con.should_leave = 1;
+                
             }
                 
         }

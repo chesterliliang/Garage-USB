@@ -18,6 +18,9 @@ namespace Garage_USB
             dt.Columns.Add("Stage", System.Type.GetType("System.Int32"));
             dt.Columns.Add("Gray Level", System.Type.GetType("System.Int32"));
             dt.Columns.Add("RV", System.Type.GetType("System.Int32"));
+            dt.Columns.Add("Noise", typeof(float));
+            dt.Columns.Add("SNR", typeof(float));
+            dt.Columns.Add("DR", typeof(float));
             dt.Columns.Add("Current", System.Type.GetType("System.Int32"));
             dt.Columns.Add("Voltage", typeof(float));
             dt.Columns.Add("Download", System.Type.GetType("System.Int32"));

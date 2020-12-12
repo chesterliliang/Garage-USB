@@ -50,11 +50,19 @@ namespace Garage_USB
             byte rv = (byte)(0xff - range_pixel(px));
             return rv;
         }
+
+        public static void gain_frame(byte[] frame, byte[] gained, int gain)
+        {
+            for (int i = 0; i < config.sensor_width*config.sensor_height; i++)
+            {
+                gained[i] = gain_pixel(frame[i], gain);
+            }
+        }
         public static void gain_image(byte[] raw, byte[] img, int gain)
         {
-            for (int i = 0; i < 1078; i++)
+            for (int i = 0; i <1078 ; i++)
                 img[i] = raw[i];
-            for (int i = 0; i < 9216; i++)
+            for (int i = 0; i < config.sensor_width * config.sensor_height; i++)
             {
                 img[i + 1078] = gain_pixel(raw[i + 1078], gain);
             }
@@ -70,7 +78,7 @@ namespace Garage_USB
                 {
                     int_avg_frame[i] += frames[i + config.sensor_width * config.sensor_height * j];
                 }
-                merged[i] = (byte)(int_avg_frame[i] / 10);
+                merged[i] = (byte)(int_avg_frame[i] / count);
             }
 
             return average_frame(merged);
@@ -79,20 +87,36 @@ namespace Garage_USB
         {
             long avg = 0;
             long sum = 0;
-            for(int i=0;i<9216;i++)
+            for(int i=0;i< config.sensor_width * config.sensor_height; i++)
             {
                 sum += image[i];
             }
 
-            avg = sum / 9216;
+            avg = sum / (config.sensor_width * config.sensor_height);
             return (int)avg;
         }
 
+        public static float average_noise(byte[] image)
+        {
+            float avg = 0;
+            float sum = 0;
+            for (int i = 0; i < config.sensor_width * config.sensor_height; i++)
+            {
+                sum += image[i];
+            }
+
+            avg = sum / (config.sensor_width * config.sensor_height);
+            return avg;
+        }
+
+
+
         public static int[] get_otsu(byte[] pPicture)
         {
-            int width = 144;
-            int height = 64;
+            int width = config.sensor_width;
+            int height = config.sensor_height;
             int[] para = new int[8];
+            int max_value = 255;
 
 
             float otsu, Wb, ub, Wf, uf, max_otsu = 0;
@@ -147,11 +171,18 @@ namespace Garage_USB
                 }
              }
 
+            for (i = 0; i < width * height; i++)
+            {
+                if (max_value > pPicture[i])
+                    max_value = pPicture[i];
+            }
+
             para[0] = bg_num;
             para[1] = fg_num;
             para[2] = bg_avg;
             para[3] = fg_avg;
             para[4] = max_th;
+            para[5] = 255 - max_value;
             return para;
 
 

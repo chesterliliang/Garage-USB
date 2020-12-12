@@ -40,6 +40,8 @@ namespace Garage_USB
         control con;
         int event_device_changed = 0;
         string firmware_path = "";
+        int button_down = 0;
+        int preview_noise = 0;
 
         public Form1()
         {
@@ -97,6 +99,7 @@ namespace Garage_USB
                 thread_mp = new Thread(threadMP);
                 thread_mp.IsBackground = true;
                 thread_mp.Start();
+                cb_mp.Checked = true;
             }
 
 
@@ -113,6 +116,9 @@ namespace Garage_USB
                 lb_rv.Text = "-1";
                 lb_graylevel.Text = "-1";
                 lb_bin.Text = "-1";
+                lb_snr.Text = "-1";
+                lb_dr.Text = "-1";
+                lb_noise.Text = "-1";
             }));
         }
         private void init_tips()
@@ -167,29 +173,32 @@ namespace Garage_USB
                 this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
                 {
                     btn_result.Text = "推-開始按鈕";
+                    btn_result.BackColor = Color.White;
                 }));
 
-                Thread.Sleep(1000);
 
-                /*rtn = con.wait_start_key(-1);
+                rtn = con.wait_start_key(-1);
                 if (rtn == def.RTN_FAIL)
                 {
                     call_fail(def.BIN_CODE_15);
                     return;
-                }*/
+                }
                 set_process(def.stage_start, def.RTN_OK);
                 init_tips();
                 init_lbs();
                 img_preview.Image = null;
 
+                con.stop_pull_button();
                 rtn = con.check_button_short();
                 if (rtn == def.RTN_FAIL)
                 {
-                    call_fail(def.BIN_CODE_16);
+                    call_fail(def.BIN_CODE_12);
                     return;
                 }
 
-                this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
+                do_prime();
+
+               /* this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
                 {
                     btn_result.Text = "壓-模組按鍵";
                 }));
@@ -202,6 +211,7 @@ namespace Garage_USB
                     call_fail(def.BIN_CODE_18);
                     return;
                 }
+               */
 
             }
             thread_mp = null;
@@ -210,6 +220,8 @@ namespace Garage_USB
         public  void do_prime()
         {
             int rtn = device.ERR_FAIL;
+            int need_calirate = 0;
+            button_down = 0;
             working = 1;
             set_process(def.stage_start, def.RTN_OK);
             init_tips();
@@ -264,8 +276,29 @@ namespace Garage_USB
             Console.WriteLine("leave waiting device while!");
             set_process(def.stage_power_up, def.RTN_OK);
             //============================================================//
-            
-            ui_tr.Start();
+
+            //to check if downloaded
+            rtn = device.disconnect();
+            rtn = device.connect(config.firmware_type);
+            if (rtn == device.ERR_OK)
+            {// already downloaded
+                need_calirate = 1;
+                //check if activated
+                rtn = device.abort();
+                if (rtn == device.ERR_OK)
+                {//activated
+                    goto TEST;
+                }
+                else
+                {
+                    goto ACTIVE;
+                }
+            }
+
+
+                //============================================================//
+
+                ui_tr.Start();
             rtn = device.download_firmware(firmware_path);
             ui_tr.Stop();
 
@@ -343,7 +376,8 @@ namespace Garage_USB
             }));
             
             Thread.Sleep(2000);// cut down
- 
+
+        ACTIVE:
             rtn = device.disconnect();
             rtn = device.connect(config.firmware_type);
             if(rtn!=device.ERR_OK)
@@ -355,9 +389,20 @@ namespace Garage_USB
                 return;
             }
 
-           byte[] version = new byte[64];
-           int len = 64;
-            rtn = device.version(version,ref len);
+            rtn = device.set_sn_activiate(device.gen_sn(config.station,config.keycode),config.dev_type);
+            if (rtn != device.ERR_OK)
+            {
+                Console.WriteLine("thread set_sn_activiate after restart failed");
+                set_process(def.stage_calibrate, def.RTN_FAIL);
+                call_fail(def.BIN_CODE_10);
+                thread = null;
+                return;
+            }
+
+            TEST:
+            byte[] version = new byte[64];
+            int len = 64;
+            rtn = device.version(version, ref len);
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread version after restart failed");
@@ -371,18 +416,6 @@ namespace Garage_USB
             {
                 lb_version.Text = strversion;
             }));
-
-            rtn = device.set_sn_activiate(device.gen_sn(config.station,config.keycode),config.dev_type);
-            if (rtn != device.ERR_OK)
-            {
-                Console.WriteLine("thread set_sn_activiate after restart failed");
-                set_process(def.stage_calibrate, def.RTN_FAIL);
-                call_fail(def.BIN_CODE_10);
-                thread = null;
-                return;
-            }
-
-            
 
             byte[] info = new byte[38];
             int len_info = 0;
@@ -401,7 +434,7 @@ namespace Garage_USB
                 lb_sn.Text = strsn;
             }));
 
-            if (cb_calibrate.Checked == true)
+            if (cb_calibrate.Checked == true||need_calirate==1)
             {
                 rtn = device.calibrate();
                 if (rtn != device.ERR_OK)
@@ -440,6 +473,14 @@ namespace Garage_USB
                 return;
             }
 
+
+            rtn = check_noise();
+            if(rtn!=def.RTN_OK)
+            {
+                return;
+            }
+
+
             set_process(def.stage_calibrate, def.RTN_OK);
             Console.Beep(2766, 200);
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
@@ -450,11 +491,12 @@ namespace Garage_USB
             }));
             //restart and calbrate
             //======================================================//
+
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
                 btn_result.Text = "拉-橡膠手柄-確保到位";
             }));
-            press_counter = 120;
+            press_counter = 80;
             ui_tr.Start();
             byte[] frame_data = new byte[config.sensor_width * config.sensor_height];
             //preview image
@@ -470,11 +512,20 @@ namespace Garage_USB
                 }
                 press_counter--;
             }
+
             if (average_check(frame_data) == def.RTN_FAIL)
             {
                 return;
             }
-               
+
+            if (button_down == 0)
+            {
+                Console.WriteLine("button down check failed");
+                set_process(def.stage_press, def.RTN_FAIL);
+                call_fail(def.BIN_CODE_16);
+                thread_press = null;
+                return;
+            }
 
             if (check_result())
             {
@@ -488,10 +539,66 @@ namespace Garage_USB
             {
                 lb_pf.Text = ram_counter_good.ToString() + "/" + ram_counter_bad.ToString();
             }));
-            Thread.Sleep(1500);
+            Thread.Sleep(500);
             btn_start.BackColor = Color.White;
             thread = null;
             working = 0;
+        }
+        public int check_noise()
+        {
+            int rtn = def.RTN_FAIL;
+            //do bg and empty image check
+            byte[] empty_frames = new byte[config.sensor_width * config.sensor_height * 10];
+            byte[] empty_frame = new byte[config.sensor_width * config.sensor_height];
+            //get 10 frames
+            for (int i = 0; i < 10; i++)
+            {
+                rtn = device.capture_frame(0, empty_frame);
+                if (rtn != device.ERR_OK)
+                {
+                    Console.WriteLine("10 emptet capture_frame failed");
+                    set_process(def.stage_calibrate, def.RTN_FAIL);
+                    call_fail(def.BIN_CODE_07);
+                    return def.RTN_FAIL;
+                }
+                fpimage.bmp_frame(empty_frame, bkg_img);
+                Buffer.BlockCopy(empty_frame, 0, empty_frames, i * config.sensor_width * config.sensor_height, config.sensor_width * config.sensor_height);
+            }
+            fpimage.merge_frames(empty_frames, 10, empty_frame);
+
+            float empty_avg = 255;
+            if (cb_enhance.Checked)
+            {
+                int sw_gain = Convert.ToInt32(tb_gain.Text);
+                fpimage.gain_frame(empty_frame, empty_frame, sw_gain);
+            }
+
+            empty_avg = fpimage.average_noise(empty_frame);
+            int[] para = fpimage.get_otsu(empty_frame);
+            int rv = para[3] - para[2];
+            if (empty_avg < 245 || rv > 10)
+            {
+                Console.WriteLine("too much noise");
+                Image img = bmp_helper.format_from_bytes(empty_frame, 0);
+                this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
+                {
+                    img_preview.Image = img;
+                    lb_rv.Text = rv.ToString();
+                    int nAvg = (int)empty_avg;
+                    lb_graylevel.Text = nAvg.ToString();
+
+
+                }));
+                set_process(def.stage_calibrate, def.RTN_FAIL);
+                call_fail(def.BIN_CODE_14);
+                return def.RTN_FAIL;
+            }
+            float noise = 255 - empty_avg;
+            this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
+            {
+                lb_noise.Text = noise.ToString("f2");
+            }));
+            return def.RTN_OK;
         }
 
         public int get_all_info(int mode)
@@ -506,10 +613,10 @@ namespace Garage_USB
                     call_fail(-2);
                     return def.RTN_FAIL;
                 }
-                if (cv2[1] > 30)
+                if (cv2[1] > 100)
                 {
                     Console.WriteLine("cos too much porwer!");
-                    call_fail(6);
+                    call_fail(16);
                     return def.RTN_FAIL;
                 }
 
@@ -569,25 +676,49 @@ namespace Garage_USB
 
         public int preview_image(byte[] frame_data)
         {
-            int rtn = device.capture_frame(0, frame_data);
+            int rtn = def.RTN_FAIL;
+            if (preview_noise == 0) 
+            {
+                rtn = check_noise();
+                if (rtn != def.RTN_OK)
+                {
+                    Console.WriteLine("preview_image check noise failed");
+                    return def.RTN_FAIL; ;
+                }
+                preview_noise = 1;
+            }
+          
+
+            rtn = device.capture_frame(0, frame_data);
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("capture_frame failed");
                 return def.RTN_FAIL;
             }
             fpimage.bmp_frame(frame_data, bkg_img);
-           
             
+
+            Image img;
+            if (cb_enhance.Checked)
+            {
+                int sw_gain = Convert.ToInt32(tb_gain.Text);
+                img = bmp_helper.format_from_bytes(frame_data, sw_gain);
+                fpimage.gain_frame(frame_data, frame_data, sw_gain);
+            }
+            else
+                img = bmp_helper.format_from_bytes(frame_data, 0);
+
             int[] para = fpimage.get_otsu(frame_data);
             int rv = para[3] - para[2];
             int avg = fpimage.average_frame(frame_data);
 
-            int sw_gain = Convert.ToInt32(tb_gain.Text);
-            Image img;
-            if (cb_enhance.Checked)
-                img = bmp_helper.format_from_bytes(frame_data, sw_gain);
-            else
-                img = bmp_helper.format_from_bytes(frame_data, 0);
+            int signal = 255 - para[2];
+            double f_noise = float.Parse(lb_noise.Text);
+            double snr = 20 * Math.Log10(signal / f_noise);
+            int max_value = para[5];
+            double max_min = max_value * 1.0 / f_noise;
+            double dr = 20 * Math.Log10(max_min);
+
 
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
@@ -596,11 +727,34 @@ namespace Garage_USB
                 {
                     lb_rv.Text = rv.ToString();
                     lb_graylevel.Text = avg.ToString();
+                    if(avg<250)
+                    {
+                        lb_snr.Text = snr.ToString("f2");
+                        lb_dr.Text = dr.ToString("f0");
+                    }
+                    else
+                    {
+                        lb_snr.Text = "-1";
+                        lb_dr.Text = "-1";
+                    }
+                   
                 }
  
             }));
-
-
+            if(button_down==0)
+            {
+                con.stop_pull_button();
+                con.check_button_short();
+                rtn = con.wait_button(2);
+                if (rtn == def.RTN_OK)
+                {
+                    button_down = 1;
+                }
+                else
+                {
+                    button_down = 0;
+                }
+            }
             return def.RTN_OK;
         }
 
@@ -610,10 +764,9 @@ namespace Garage_USB
             byte[] frame10 = new byte[10 * config.sensor_width * config.sensor_height];
             byte[] avg_frame = new byte[config.sensor_width * config.sensor_height];
             int avg = 0;
-            if (press_counter == 0)
-            {
-                avg = fpimage.merge_frames(frame10, 10, avg_frame);
-            }
+
+            //avg = fpimage.merge_frames(frame10, 10, avg_frame);
+
             //get 10 frames
             for (int i = 0; i < 10; i++)
             {
@@ -629,15 +782,28 @@ namespace Garage_USB
                 Buffer.BlockCopy(frame_data, 0, frame10, i * config.sensor_width * config.sensor_height, config.sensor_width * config.sensor_height);
             }
             avg = fpimage.merge_frames(frame10, 10, avg_frame);
-            int[] para = fpimage.get_otsu(avg_frame);
-            int rv = para[3] - para[2];
+          
             // do report
-            Image avg_img;
-            int sw_gain = Convert.ToInt32(tb_gain.Text);
+            Image avg_img; 
             if (cb_enhance.Checked)
-                avg_img = bmp_helper.format_from_bytes(frame_data, sw_gain);
+            {
+                int sw_gain = Convert.ToInt32(tb_gain.Text);
+                avg_img = bmp_helper.format_from_bytes(avg_frame, sw_gain);
+                fpimage.gain_frame(avg_frame, avg_frame, sw_gain);
+                avg = fpimage.average_frame(avg_frame);
+            }        
             else
-                avg_img = bmp_helper.format_from_bytes(frame_data, 0);
+                avg_img = bmp_helper.format_from_bytes(avg_frame, 0);
+
+            int[] para = fpimage.get_otsu(avg_frame);   
+            int rv = para[3] - para[2];
+
+            int signal = 255 - para[2];
+            double f_noise = float.Parse(lb_noise.Text);
+            double snr = 20 * Math.Log10(signal / f_noise);
+            int max_value = para[5];
+            double max_min = max_value * 1.0 / f_noise;
+            double dr = 20 * Math.Log10(max_min);
 
             avg_img.Save(csv_log.path + lb_sn.Text + ".bmp");
 
@@ -646,6 +812,8 @@ namespace Garage_USB
                 img_preview.Image = avg_img;
                 lb_rv.Text = rv.ToString();
                 lb_graylevel.Text = avg.ToString();
+                lb_snr.Text = snr.ToString("f2");
+                lb_dr.Text = dr.ToString("f0");
 
             }));
             ui_tr.Stop();
@@ -691,7 +859,7 @@ namespace Garage_USB
         public void do_press()
         {
             int rtn = def.RTN_FAIL;
-            press_counter = 120;
+            press_counter = 80;
             ui_tr.Start();
             byte[] frame_data = new byte[config.sensor_width * config.sensor_height];
             //preview image
@@ -708,12 +876,24 @@ namespace Garage_USB
                 }
                 press_counter--;
             }
+           
+
             if (average_check(frame_data) == def.RTN_FAIL)
             {
                 thread_press = null;
                 return;
             }
-               
+
+            //check button again for final
+            if (button_down == 0)
+            {
+                Console.WriteLine("button down check failed");
+                set_process(def.stage_press, def.RTN_FAIL);
+                call_fail(def.BIN_CODE_15);
+                thread_press = null;
+                return;
+            }
+
 
             if (check_result())
             {
@@ -752,7 +932,10 @@ namespace Garage_USB
                     if (btn_tip_press.BackColor == Color.White)
                     {
                         btn_tip_press.BackColor = Color.Blue;
-                        btn_tip_blink.BackColor = Color.Blue;
+                        if(button_down==0)
+                            btn_tip_blink.BackColor = Color.Blue;
+                        else
+                            btn_tip_blink.BackColor = Color.Green;
                     }
                     else if (btn_tip_press.BackColor == Color.Blue)
                     {
@@ -1029,6 +1212,11 @@ namespace Garage_USB
             dr["Parameter"] = lb_parameter.Text;
             dr["Gray Level"] = Convert.ToInt32(lb_graylevel.Text);
             dr["RV"] = Convert.ToInt32(lb_rv.Text);
+            dr["noise"] = float.Parse(lb_noise.Text);
+            dr["snr"] = float.Parse(lb_snr.Text);
+            dr["dr"] = float.Parse(lb_dr.Text);
+            dr["RV"] = Convert.ToInt32(lb_rv.Text);
+            dr["RV"] = Convert.ToInt32(lb_rv.Text);
             dr["Stage"] = ssm_state;
             if (ssm_state == def.stage_result_ok)
                 dr["Result"] = "PASS";//good
@@ -1051,6 +1239,7 @@ namespace Garage_USB
 
         private void btn_live_Click(object sender, EventArgs e)
         {
+            preview_noise = 0;
             Console.WriteLine("BTN start clicked ");
             if (thread_live != null)
             {
@@ -1209,9 +1398,9 @@ namespace Garage_USB
         private void cb_enhance_CheckedChanged(object sender, EventArgs e)
         {
             if (cb_enhance.Checked == true)
-                tb_gain.Enabled = true;
-            else
                 tb_gain.Enabled = false;
+            else
+                tb_gain.Enabled = true;
         }
 
         private void btn_clear_Click(object sender, EventArgs e)

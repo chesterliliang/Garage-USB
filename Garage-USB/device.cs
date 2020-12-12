@@ -156,7 +156,7 @@ namespace Garage_USB
 
         [DllImport("product.dll", EntryPoint = "PAPRO_Abort", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_Abort();
-        public static int abort(byte[] version, ref int len)
+        public static int abort()
         {
             int rtn = ERR_FAIL;
             Console.WriteLine("enter abort!");

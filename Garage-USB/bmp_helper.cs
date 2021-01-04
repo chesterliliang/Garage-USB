@@ -18,6 +18,7 @@ namespace Garage_USB
         {
             width = w;
             height = h;
+            Console.WriteLine("bmp template path " + ref_path);
             if (template == null)
             {
                 template = new byte[header_len + width * height];

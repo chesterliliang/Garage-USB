@@ -24,5 +24,9 @@ namespace Garage_USB
         public static int dev_type = 0;
         public static int channel = 0;
         public static int auto_start = 0;
+        public static int comm_type = 0;
+        public static int single_module = 0;
+        public static int test_only = 0;
+        public static int simple_test = 0;
     }
 }

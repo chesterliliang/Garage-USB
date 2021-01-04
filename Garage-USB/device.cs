@@ -71,14 +71,14 @@ namespace Garage_USB
         }
 
         [DllImport("product.dll", EntryPoint = "PAPRO_Capture_Frame", CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe int PAPRO_Capture_Frame(char mode, byte[] frame);
+        public static extern unsafe int PAPRO_Capture_Frame(char mode, byte[] frame, ref int len);
 
-        public static int capture_frame(int mode, byte[] frame)
+        public static int capture_frame(int mode, byte[] frame, ref int len)
         {
             int rtn = ERR_FAIL;
             //Console.WriteLine("enter capture_frame! mode="+mode.ToString());
             char c = (char)mode;
-            rtn = PAPRO_Capture_Frame(c,frame);
+            rtn = PAPRO_Capture_Frame(c,frame,ref len);
             if(rtn==ERR_FAIL)
                 Console.WriteLine("leave capture_frame! rv = 0x" + String.Format("{0:X000}", rtn));
             return rtn;

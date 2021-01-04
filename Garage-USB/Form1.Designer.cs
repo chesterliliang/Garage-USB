@@ -75,6 +75,12 @@ namespace Garage_USB
             this.label10 = new System.Windows.Forms.Label();
             this.lb_voltage = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.lb_dr = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.lb_snr = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
+            this.lb_noise = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
             this.lb_version = new System.Windows.Forms.Label();
             this.label12 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
@@ -93,12 +99,6 @@ namespace Garage_USB
             this.btn_read = new System.Windows.Forms.Button();
             this.tb_gain = new System.Windows.Forms.TextBox();
             this.btn_clear = new System.Windows.Forms.Button();
-            this.label8 = new System.Windows.Forms.Label();
-            this.lb_noise = new System.Windows.Forms.Label();
-            this.lb_snr = new System.Windows.Forms.Label();
-            this.label17 = new System.Windows.Forms.Label();
-            this.lb_dr = new System.Windows.Forms.Label();
-            this.label19 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.img_preview)).BeginInit();
             this.groupBox3.SuspendLayout();
@@ -215,16 +215,16 @@ namespace Garage_USB
             // 
             this.img_preview.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.img_preview.Image = ((System.Drawing.Image)(resources.GetObject("img_preview.Image")));
-            this.img_preview.Location = new System.Drawing.Point(484, 108);
+            this.img_preview.Location = new System.Drawing.Point(484, 130);
             this.img_preview.Name = "img_preview";
-            this.img_preview.Size = new System.Drawing.Size(288, 128);
+            this.img_preview.Size = new System.Drawing.Size(288, 132);
             this.img_preview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.img_preview.TabIndex = 8;
             this.img_preview.TabStop = false;
             // 
             // btn_live
             // 
-            this.btn_live.Location = new System.Drawing.Point(657, 250);
+            this.btn_live.Location = new System.Drawing.Point(653, 94);
             this.btn_live.Name = "btn_live";
             this.btn_live.Size = new System.Drawing.Size(59, 23);
             this.btn_live.TabIndex = 9;
@@ -251,7 +251,7 @@ namespace Garage_USB
             this.btn_result.Font = new System.Drawing.Font("微软雅黑", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.btn_result.Location = new System.Drawing.Point(12, 278);
             this.btn_result.Name = "btn_result";
-            this.btn_result.Size = new System.Drawing.Size(593, 56);
+            this.btn_result.Size = new System.Drawing.Size(321, 56);
             this.btn_result.TabIndex = 18;
             this.btn_result.Text = "等待開始";
             this.btn_result.UseVisualStyleBackColor = false;
@@ -632,6 +632,66 @@ namespace Garage_USB
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Test Info";
             // 
+            // lb_dr
+            // 
+            this.lb_dr.AutoSize = true;
+            this.lb_dr.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lb_dr.Location = new System.Drawing.Point(238, 140);
+            this.lb_dr.Name = "lb_dr";
+            this.lb_dr.Size = new System.Drawing.Size(22, 18);
+            this.lb_dr.TabIndex = 33;
+            this.lb_dr.Text = "-1";
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label19.Location = new System.Drawing.Point(175, 140);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(31, 18);
+            this.label19.TabIndex = 32;
+            this.label19.Text = "DR";
+            // 
+            // lb_snr
+            // 
+            this.lb_snr.AutoSize = true;
+            this.lb_snr.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lb_snr.Location = new System.Drawing.Point(238, 117);
+            this.lb_snr.Name = "lb_snr";
+            this.lb_snr.Size = new System.Drawing.Size(22, 18);
+            this.lb_snr.TabIndex = 31;
+            this.lb_snr.Text = "-1";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label17.Location = new System.Drawing.Point(174, 117);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(41, 18);
+            this.label17.TabIndex = 30;
+            this.label17.Text = "SNR";
+            // 
+            // lb_noise
+            // 
+            this.lb_noise.AutoSize = true;
+            this.lb_noise.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lb_noise.Location = new System.Drawing.Point(384, 96);
+            this.lb_noise.Name = "lb_noise";
+            this.lb_noise.Size = new System.Drawing.Size(22, 18);
+            this.lb_noise.TabIndex = 29;
+            this.lb_noise.Text = "-1";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label8.Location = new System.Drawing.Point(320, 96);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(49, 18);
+            this.label8.TabIndex = 28;
+            this.label8.Text = "Noise";
+            // 
             // lb_version
             // 
             this.lb_version.AutoSize = true;
@@ -656,7 +716,7 @@ namespace Garage_USB
             // 
             this.label11.AutoSize = true;
             this.label11.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label11.Location = new System.Drawing.Point(614, 288);
+            this.label11.Location = new System.Drawing.Point(350, 289);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(68, 36);
             this.label11.TabIndex = 26;
@@ -666,7 +726,7 @@ namespace Garage_USB
             // 
             this.lb_bin.AutoSize = true;
             this.lb_bin.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_bin.Location = new System.Drawing.Point(688, 288);
+            this.lb_bin.Location = new System.Drawing.Point(424, 289);
             this.lb_bin.Name = "lb_bin";
             this.lb_bin.Size = new System.Drawing.Size(44, 36);
             this.lb_bin.TabIndex = 28;
@@ -674,7 +734,7 @@ namespace Garage_USB
             // 
             // btn_stop
             // 
-            this.btn_stop.Location = new System.Drawing.Point(717, 250);
+            this.btn_stop.Location = new System.Drawing.Point(713, 94);
             this.btn_stop.Name = "btn_stop";
             this.btn_stop.Size = new System.Drawing.Size(53, 23);
             this.btn_stop.TabIndex = 29;
@@ -684,7 +744,7 @@ namespace Garage_USB
             // 
             // btn_hist
             // 
-            this.btn_hist.Location = new System.Drawing.Point(599, 250);
+            this.btn_hist.Location = new System.Drawing.Point(595, 94);
             this.btn_hist.Name = "btn_hist";
             this.btn_hist.Size = new System.Drawing.Size(56, 23);
             this.btn_hist.TabIndex = 30;
@@ -694,7 +754,7 @@ namespace Garage_USB
             // cb_enhance
             // 
             this.cb_enhance.AutoSize = true;
-            this.cb_enhance.Location = new System.Drawing.Point(484, 252);
+            this.cb_enhance.Location = new System.Drawing.Point(480, 96);
             this.cb_enhance.Name = "cb_enhance";
             this.cb_enhance.Size = new System.Drawing.Size(61, 20);
             this.cb_enhance.TabIndex = 31;
@@ -707,9 +767,9 @@ namespace Garage_USB
             this.btn_tip_blink.BackColor = System.Drawing.Color.White;
             this.btn_tip_blink.FlatAppearance.BorderSize = 0;
             this.btn_tip_blink.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_tip_blink.Location = new System.Drawing.Point(474, 101);
+            this.btn_tip_blink.Location = new System.Drawing.Point(474, 123);
             this.btn_tip_blink.Name = "btn_tip_blink";
-            this.btn_tip_blink.Size = new System.Drawing.Size(306, 143);
+            this.btn_tip_blink.Size = new System.Drawing.Size(306, 147);
             this.btn_tip_blink.TabIndex = 32;
             this.btn_tip_blink.Text = "button1";
             this.btn_tip_blink.UseVisualStyleBackColor = false;
@@ -797,7 +857,7 @@ namespace Garage_USB
             // tb_gain
             // 
             this.tb_gain.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.tb_gain.Location = new System.Drawing.Point(551, 252);
+            this.tb_gain.Location = new System.Drawing.Point(547, 96);
             this.tb_gain.Name = "tb_gain";
             this.tb_gain.Size = new System.Drawing.Size(41, 21);
             this.tb_gain.TabIndex = 49;
@@ -813,66 +873,6 @@ namespace Garage_USB
             this.btn_clear.Text = "Clear";
             this.btn_clear.UseVisualStyleBackColor = true;
             this.btn_clear.Click += new System.EventHandler(this.btn_clear_Click);
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label8.Location = new System.Drawing.Point(320, 96);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(49, 18);
-            this.label8.TabIndex = 28;
-            this.label8.Text = "Noise";
-            // 
-            // lb_noise
-            // 
-            this.lb_noise.AutoSize = true;
-            this.lb_noise.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_noise.Location = new System.Drawing.Point(384, 96);
-            this.lb_noise.Name = "lb_noise";
-            this.lb_noise.Size = new System.Drawing.Size(22, 18);
-            this.lb_noise.TabIndex = 29;
-            this.lb_noise.Text = "-1";
-            // 
-            // lb_snr
-            // 
-            this.lb_snr.AutoSize = true;
-            this.lb_snr.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_snr.Location = new System.Drawing.Point(238, 117);
-            this.lb_snr.Name = "lb_snr";
-            this.lb_snr.Size = new System.Drawing.Size(22, 18);
-            this.lb_snr.TabIndex = 31;
-            this.lb_snr.Text = "-1";
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label17.Location = new System.Drawing.Point(174, 117);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(41, 18);
-            this.label17.TabIndex = 30;
-            this.label17.Text = "SNR";
-            // 
-            // lb_dr
-            // 
-            this.lb_dr.AutoSize = true;
-            this.lb_dr.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_dr.Location = new System.Drawing.Point(238, 140);
-            this.lb_dr.Name = "lb_dr";
-            this.lb_dr.Size = new System.Drawing.Size(22, 18);
-            this.lb_dr.TabIndex = 33;
-            this.lb_dr.Text = "-1";
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label19.Location = new System.Drawing.Point(175, 140);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(31, 18);
-            this.label19.TabIndex = 32;
-            this.label19.Text = "DR";
             // 
             // Form1
             // 

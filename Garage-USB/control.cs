@@ -103,7 +103,7 @@ namespace Garage_USB
                     if (mode == (int)MODE.UP)
                         sp.Write(power_up, 0, 9);
                     else if (mode == (int)MODE.DOWN)
-                        sp.Write(power_down, 0, 9);
+                        sp.Write(power_down, 0, 9); 
                 }
                 else if (command == (int)COMMAND.S0)
                 {

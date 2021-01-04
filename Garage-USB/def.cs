@@ -9,6 +9,8 @@ namespace Garage_USB
         public const int DBT_DEVNODES_CHANGED = 0x0007;
         public static int WM_DEVICECHANGE = 0x219;
         public static string template_name = "key.bin";
+        public static string template_hearder = "key";
+        public static string template_tail = ".bin";
         public static int stage_start = 0;
         public static int stage_power_up = 1;
         public static int stage_download = 2;
@@ -50,6 +52,10 @@ namespace Garage_USB
 
         public static int COSTYPE_USB_MOH_F323 = 64;
         public static int DEVTYPE_USB_MOH_F323 = 23;
+
+        public static int COSTYPE_SERIAL_F225 = 20;
+        public static int DEVTYPE_SERIAL_F225 = 12;
+
         public static int COSTYPE_USB_MOCH_MOH_BLD = 54;
         public static int DEVTYPE_USB_MOCH_MOH_BLD = 29;
     }

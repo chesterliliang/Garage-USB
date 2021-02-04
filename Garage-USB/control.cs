@@ -73,6 +73,19 @@ namespace Garage_USB
 
         public int open_port(string com_number)
         {
+            if(sp!=null)
+            {
+                try
+                {
+                    Console.WriteLine("Close before Open!");
+                    sp.Close();
+                }
+                catch(Exception e)
+                {
+                    Console.WriteLine("Close before Open failed! " + e.Message);
+                }
+            }
+            sp = null;    
             sp = new SerialPort(config.comport);
             sp.BaudRate = 115200;
             sp.DataBits = 8;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 using System.IO;
+using System.Windows.Forms;
 
 namespace Garage_USB
 {
@@ -11,23 +12,62 @@ namespace Garage_USB
         public static int width = 0;
         public static int height = 0;
         private static int header_len = 1078;
-
         private static byte[] template;
 
-        public static void init(int w, int h, string ref_path)
+        public static void image_view_init(PictureBox img_preview)
         {
-            width = w;
-            height = h;
-            Console.WriteLine("bmp template path " + ref_path);
-            if (template == null)
+            if (config.sensor_width == 100)
             {
-                template = new byte[header_len + width * height];
+                img_preview.Width = (int)(config.sensor_width * 3.2);
+                img_preview.Height = (int)(config.sensor_height * 3.2);
+                img_preview.Left = 85;
+                img_preview.Top = 22;
             }
+            else if (config.sensor_width == 160)
+            {
+                img_preview.Width = config.sensor_width * 2;
+                img_preview.Height = config.sensor_height * 2;
+                img_preview.Left = 85;
+                img_preview.Top = 22;
+            }
+            else if (config.sensor_width == 144)
+            {
+                img_preview.Width = config.sensor_width * 2;
+                img_preview.Height = config.sensor_height * 2;
+                img_preview.Left = 100;
+                img_preview.Top = 100;
+
+            }
+            else if (config.sensor_width == 103)
+            {
+                img_preview.Width = config.sensor_width * 3;
+                img_preview.Height = config.sensor_height * 3;
+                img_preview.Left = 90;
+                img_preview.Top = 88;
+            }
+        }
+
+        public static void init(fang g)
+        {
+            string ref_path = g.ref_path + @"\files\";
+            width = config.sensor_width;
+            height = config.sensor_height;
+            //init bmp template
+
+            ref_path += def.template_hearder + config.sensor_width.ToString() + def.template_tail;
+
+            Console.WriteLine("bmp template path " + ref_path);
+
+            g.bkg_img = new byte[config.sensor_width * config.sensor_height];
+
+            template = null;
+            template = new byte[header_len + width * height];
             try
             {
                 FileStream fs = new FileStream(ref_path, FileMode.Open);
                 fs.Read(template, 0, header_len + width * height);
                 fs.Close();
+                fs.Dispose();
             }
             catch (Exception e)
             {

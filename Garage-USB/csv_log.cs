@@ -26,7 +26,6 @@ namespace Garage_USB
             dt.Columns.Add("Download", System.Type.GetType("System.Int32"));
             dt.Columns.Add("Activate", System.Type.GetType("System.Int32"));
             dt.Columns.Add("SN", System.Type.GetType("System.String"));
-            dt.Columns.Add("Remains", System.Type.GetType("System.String"));
             dt.Columns.Add("Version", System.Type.GetType("System.String"));
             dt.Columns.Add("Parameter", System.Type.GetType("System.String"));
             dt.Columns.Add("Station", System.Type.GetType("System.String"));

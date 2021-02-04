@@ -8,18 +8,17 @@ namespace Garage_USB
     {
         public const int DBT_DEVNODES_CHANGED = 0x0007;
         public static int WM_DEVICECHANGE = 0x219;
-        public static string template_name = "key.bin";
         public static string template_hearder = "key";
         public static string template_tail = ".bin";
         public static int stage_start = 0;
-        public static int stage_power_up = 1;
-        public static int stage_download = 2;
-        public static int stage_restart = 3;
-        public static int stage_calibrate = 4;
-        public static int stage_press = 5;
-        public static int stage_result= 6;
-        public static int stage_result_ok = 7;
-        public static int stage_result_fail = -1;
+        public static int stage_power_up = 17;
+        public static int stage_download = 35;
+        public static int stage_restart = 52;
+        public static int stage_calibrate = 70;
+        public static int stage_press = 85;
+        public static int stage_result= 99;
+        public static int stage_result_ok = 100;
+        public static int stage_result_fail = 0;
         public static int RTN_OK = 0;
         public static int RTN_FAIL = -1;
 

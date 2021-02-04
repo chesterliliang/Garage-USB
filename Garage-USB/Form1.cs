@@ -7,106 +7,126 @@ using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
 
-
-
-
 namespace Garage_USB
 {
     public partial class Form1 : Form
     {
-
-        //System.Timers.Timer live_tr = new System.Timers.Timer();
-
-        System.Timers.Timer ui_tr = new System.Timers.Timer();
-        byte[] bkg_img = null;
+        System.Timers.Timer ui_tr = new System.Timers.Timer();   
         ThreadStart threadStart = null;
         ThreadStart threadLive = null;
-        int live_state = 0;
-        ThreadStart threadPress = null;
         ThreadStart threadMP = null;
-        int working = 0;
-
         Thread thread = null;
         Thread thread_live = null;
-        Thread thread_press = null;
         Thread thread_mp = null;
-        int press_counter = 0;
-        DataTable dt = new DataTable();
-        DataTable dt_config = new DataTable();
-        int ssm_state = 0;
-        string log_path = "";
-        int ram_counter_good = 0;
-        int ram_counter_bad = 0;
         control con;
-        int event_device_changed = 0;
-        string firmware_path = "";
-        int button_down = 0;
-        int preview_noise = 0;
-
+        fang g;     
+       void Thread_Init()
+        {
+            threadStart = new ThreadStart(do_prime);
+            threadLive = new ThreadStart(do_preview);
+            threadMP = new ThreadStart(do_mp);
+        }
+        void Init_Timer()
+        {
+            ui_tr.AutoReset = true;
+            ui_tr.Elapsed += new ElapsedEventHandler(ui_tr_event);
+            ui_tr.Interval = 200;
+        }
+        void Data_Init()
+        {
+            g = new fang(Application.StartupPath);
+            int i = config.init_projects(g);
+            config.load_config(g, i);
+            config.init_station(g);
+        }
         public Form1()
         {
             InitializeComponent();
             Console.WriteLine("App start up!");
-            threadStart = new ThreadStart(do_prime);
-            threadLive = new ThreadStart(do_preview);
-            threadPress = new ThreadStart(do_press);
-            threadMP = new ThreadStart(do_mp);
-
-            load_config();
-            con = new control();
+            Data_Init();
+            Thread_Init();
+            Init_Timer();
             open_create_log();
-  
-            firmware_path = Application.StartupPath + @"\" + config.keycode + def.firmware_file;
-            Console.WriteLine("firmware path = " + firmware_path);
-
-            //init bmp template
-            if(config.sensor_width==144)
-                bmp_helper.init(config.sensor_width, config.sensor_height, Application.StartupPath + def.template_name);
-            else
-                bmp_helper.init(config.sensor_width, config.sensor_height, Application.StartupPath + def.template_hearder + config.sensor_width.ToString()+def.template_tail);
-
-            csv_log.path = Application.StartupPath + @"\img\";
-            Console.WriteLine("img storage path = " + csv_log.path);
-
-
-            bkg_img = new byte[config.sensor_width * config.sensor_height];
-            //set 
-            ui_tr.AutoReset = true;
-            ui_tr.Elapsed += new ElapsedEventHandler(ui_tr_event);
-            ui_tr.Interval = 200;
-
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
             
+           
+        }
+        void project_ui_init(int index)
+        {
+            int dft = 0;
             lb_project.Text = config.project_name;
-            lb_product.Text = config.product_code;
+            lb_product.Text = config.comm_type.ToString()+"-"+config.firmware_type.ToString()+"-"+config.dev_type.ToString();
+            cmb_project.Items.Clear();
+            cmb_project.Items.Add("Select Project");
+            for (int i = 0; i < g.dt_configs.Rows.Count; i++)
+            {
+                cmb_project.Items.Add(g.dt_configs.Rows[i]["Project"].ToString());
+                if (Convert.ToInt32(g.dt_configs.Rows[i]["Default"]) == 1)
+                    dft = i;
+            }
+            if(index!=-1)
+                cmb_project.SelectedIndex = index;
+            else
+                cmb_project.SelectedIndex = dft+1;
+        }
+        void station_ui_init()
+        {
             lb_station.Text = config.station.ToString();
-            lb_pf.Text = ram_counter_good.ToString() + "/" + ram_counter_bad.ToString();
+            lb_pf.Text = g.ram_counter_good.ToString() + "/" + g.ram_counter_bad.ToString();
             btn_tip_blink.BackColor = Color.White;
             set_process(def.stage_start, def.RTN_OK);
             tb_com.Text = config.comport;
-            if(config.single_module!=1)
+            btn_start.BackColor = Color.White;
+
+        }
+
+        private void btn_reload_Click(object sender, EventArgs e)
+        {
+            int i = config.init_projects(g);
+            if(cmb_project.SelectedIndex!=0)
+            {
+                config.load_config(g,cmb_project.SelectedIndex - 1);
+                project_ui_init(cmb_project.SelectedIndex);
+            } 
+            else
+            {
+                config.load_config(g,i);
+                project_ui_init(i);
+            }    
+            config.init_station(g);
+            
+            station_ui_init();
+            image_view_init();
+            g.ram_counter_bad = 0;
+            g.ram_counter_good = 0;
+
+        }
+        void image_view_init()
+        {
+            bmp_helper.image_view_init(img_preview);
+            bmp_helper.init(g);
+        }
+        void control_init()
+        {
+            con = new control();
+            if (config.single_module != 1)
             {
                 if (con.open_port(config.comport) == def.RTN_OK)
+                {
                     tb_com.BackColor = Color.Green;
+                    con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
+                    con.switch_control((int)control.COMMAND.USB, (int)control.MODE.UP);
+                    con.switch_control((int)control.COMMAND.S0, (int)control.MODE.UP);
+                }
+                   
                 else
                     tb_com.BackColor = Color.Red;
             }
 
+        }
 
-            btn_start.BackColor = Color.White;
-            btn_start.Text = "Click Button to Start";
-
-            if (config.single_module != 1)
-            {
-                con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
-                con.switch_control((int)control.COMMAND.USB, (int)control.MODE.UP);
-                con.switch_control((int)control.COMMAND.S0, (int)control.MODE.UP);
-            }
-                
-            if (config.auto_start==1)
+        void mp_handling()
+        {
+            if (config.auto_start == 1)
             {
                 Console.WriteLine("auto started!");
                 thread_mp = new Thread(threadMP);
@@ -114,15 +134,15 @@ namespace Garage_USB
                 thread_mp.Start();
                 cb_mp.Checked = true;
             }
+        }
 
-            if(config.sensor_width!=144)
-            {
-                img_preview.Width = config.sensor_width*2;
-                img_preview.Height = config.sensor_height*2;
-                btn_tip_blink.Visible = false; ;
-            }
-
-
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            control_init();
+            project_ui_init(-1);
+            station_ui_init();
+            image_view_init();
+            mp_handling();
         }
         private void init_lbs()
         {
@@ -158,7 +178,11 @@ namespace Garage_USB
             {
                 btn_start.BackColor = Color.Blue;
                 if (thread != null)
+                {
+                    Console.WriteLine("Thread exists!");
                     return;
+                }
+                    
                 thread = new Thread(threadStart);
                 thread.IsBackground = true;
                 thread.Start();
@@ -166,7 +190,11 @@ namespace Garage_USB
             else
             {
                 if (thread_mp != null)
+                {
+                    Console.WriteLine("Thread_mp exists!");
                     return;
+                }
+                    
 
                 thread_mp = new Thread(threadMP);
                 thread_mp.IsBackground = true;
@@ -185,7 +213,7 @@ namespace Garage_USB
 
             while (cb_mp.Checked==true)
             {
-                if (working == 1)
+                if (g.working == 1)
                     continue;
 
                 btn_start.BackColor = Color.Purple;
@@ -244,8 +272,8 @@ namespace Garage_USB
         {
             int rtn = device.ERR_FAIL;
             int need_calirate = 0;
-            button_down = 0;
-            working = 1;
+            g.button_down = 0;
+            g.working = 1;
             set_process(def.stage_start, def.RTN_OK);
             init_tips();
             init_lbs();
@@ -257,7 +285,7 @@ namespace Garage_USB
             if (config.test_only == 2)
                 goto TEST;
 
-            event_device_changed = 0;
+            g.event_device_changed = 0;
             Console.WriteLine("Power up!");
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP) ;
             Thread.Sleep(50);
@@ -292,7 +320,7 @@ namespace Garage_USB
                 lb_current.Text = cv[1].ToString();
             }));
             int wait_first_connect_counter = 0;
-            while (event_device_changed<2)
+            while (g.event_device_changed<2)
             {
                 Thread.Sleep(1);
                 wait_first_connect_counter++;
@@ -329,7 +357,7 @@ namespace Garage_USB
                 //============================================================//
 
                 ui_tr.Start();
-            rtn = device.download_firmware(firmware_path);
+            rtn = device.download_firmware(g.firmware_path);
             ui_tr.Stop();
 
             if(rtn==def.RTN_OK)
@@ -346,7 +374,7 @@ namespace Garage_USB
             //============================================================//
 
 
-            event_device_changed = 0;
+            g.event_device_changed = 0;
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
 
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
@@ -375,6 +403,21 @@ namespace Garage_USB
                     call_fail(def.BIN_CODE_F4);
                     return;
                 }
+                if (config.c_check == 1)
+                {
+                    if (cv2[1] < config.c_th_low)
+                    {
+                        Console.WriteLine("Current below limited!");
+                        call_fail(def.BIN_CODE_F2);
+                        return;
+                    }
+                    if (cv2[1] > config.c_th_high)//<30
+                    {
+                        Console.WriteLine("Current above limited!");
+                        call_fail(def.BIN_CODE_F4);
+                        return;
+                    }
+                }
 
             }
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
@@ -387,7 +430,7 @@ namespace Garage_USB
                 btn_tip_restart.BackColor = Color.Purple;
             }));
             int wait_cos_plugin_counter = 0;
-            while (event_device_changed < 2)
+            while (g.event_device_changed < 2)
             {
                 Thread.Sleep(1);
                 wait_cos_plugin_counter++;
@@ -506,8 +549,9 @@ namespace Garage_USB
                 }
 
 
-                byte[] list = new byte[7];
-                rtn = device.config(0, list);
+                byte[] list = new byte[64];
+                int config_len = 0;
+                rtn = device.config(0, list, ref config_len);
                 if (rtn != device.ERR_OK)
                 {
                     Console.WriteLine("thread config after restart failed");
@@ -522,7 +566,7 @@ namespace Garage_USB
                 {
                     lb_parameter.Text = strconfig;
                 }));
-                rtn = device.get_bg(bkg_img);
+                rtn = device.get_bg(g.bkg_img);
                 if (rtn != device.ERR_OK)
                 {
                     Console.WriteLine("thread get_bg after restart failed");
@@ -544,7 +588,7 @@ namespace Garage_USB
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
                 img_preview.Image = null;
-                btn_tip_press.BackColor = Color.Blue;
+                //btn_tip_press.BackColor = Color.Blue;
                 btn_tip_blink.BackColor = Color.Blue;
             }));
             //restart and calbrate
@@ -554,14 +598,14 @@ namespace Garage_USB
             {
                 btn_result.Text = "拉-橡膠手柄-確保到位";
             }));
-            press_counter = 80;
+            g.press_counter = 80;
             ui_tr.Start();
             byte[] frame_data = new byte[4*config.sensor_width * config.sensor_height];
 
             if (config.simple_test == 0)
             {
                 //preview image
-                while (press_counter > 0)
+                while (g.press_counter > 0)
                 {
                     rtn = preview_image(frame_data);
                     if (rtn != device.ERR_OK)
@@ -571,14 +615,13 @@ namespace Garage_USB
                         call_fail(def.BIN_CODE_06);
                         return;
                     }
-                    press_counter--;
+                    g.press_counter--;
                 }
-                if (button_down == 0)
+                if (g.button_down == 0&&config.btn_check==1)
                 {
                     Console.WriteLine("button down check failed");
                     set_process(def.stage_press, def.RTN_FAIL);
                     call_fail(def.BIN_CODE_16);
-                    thread_press = null;
                     return;
                 }
             }
@@ -590,6 +633,7 @@ namespace Garage_USB
                 {
                     Console.WriteLine("capture_frame failed");
                     set_process(def.stage_press, def.RTN_FAIL);
+                    call_fail(def.BIN_CODE_06);
                     return;
                 }
             }
@@ -597,15 +641,15 @@ namespace Garage_USB
             {
                 if (average_check(frame_data) == def.RTN_FAIL)
                 {
-                    ram_counter_bad++;
+                    g.ram_counter_bad++;
                     this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
                     {
-                        lb_pf.Text = ram_counter_good.ToString() + "/" + ram_counter_bad.ToString();
+                        lb_pf.Text = g.ram_counter_good.ToString() + "/" + g.ram_counter_bad.ToString();
                     }));
                     Thread.Sleep(500);
                     btn_start.BackColor = Color.White;
                     thread = null;
-                    working = 0;
+                    g.working = 0;
                     device.disconnect();
                     return;
                 }
@@ -614,15 +658,15 @@ namespace Garage_USB
             {
                 if(inline_check(frame_data)==def.RTN_FAIL)
                 {
-                    ram_counter_bad++;
+                    g.ram_counter_bad++;
                     this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
                     {
-                        lb_pf.Text = ram_counter_good.ToString() + "/" + ram_counter_bad.ToString();
+                        lb_pf.Text = g.ram_counter_good.ToString() + "/" + g.ram_counter_bad.ToString();
                     }));
                     Thread.Sleep(500);
                     btn_start.BackColor = Color.White;
                     thread = null;
-                    working = 0;
+                    g.working = 0;
                     device.disconnect();
                     return;
                 }
@@ -639,16 +683,16 @@ namespace Garage_USB
                     con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
                 }
             }
-            ram_counter_good++;
+            g.ram_counter_good++;
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
-                lb_pf.Text = ram_counter_good.ToString() + "/" + ram_counter_bad.ToString();
+                lb_pf.Text = g.ram_counter_good.ToString() + "/" + g.ram_counter_bad.ToString();
             }));
             Thread.Sleep(500);
             btn_start.BackColor = Color.White;
             device.disconnect();
             thread = null;
-            working = 0;
+            g.working = 0;
         }
         public int check_noise()
         {
@@ -668,7 +712,7 @@ namespace Garage_USB
                     call_fail(def.BIN_CODE_07);
                     return def.RTN_FAIL;
                 }
-                fpimage.bmp_frame(empty_frame, bkg_img);
+                fpimage.bmp_frame(empty_frame, g.bkg_img);
                 Buffer.BlockCopy(empty_frame, 0, empty_frames, i * config.sensor_width * config.sensor_height, config.sensor_width * config.sensor_height);
             }
             fpimage.merge_frames(empty_frames, 10, empty_frame);
@@ -735,8 +779,9 @@ namespace Garage_USB
             }));
             if (mode == 0)
                 return def.RTN_OK;
-            byte[] list = new byte[7];
-            rtn = device.config(0, list);
+            byte[] list = new byte[64];
+            int config_len = 0;
+            rtn = device.config(0, list,ref config_len);
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread config after restart failed");
@@ -784,7 +829,7 @@ namespace Garage_USB
         public int preview_image(byte[] frame_data)
         {
             int rtn = def.RTN_FAIL;
-            if (preview_noise == 0) 
+            if (g.preview_noise == 0) 
             {
                 rtn = check_noise();
                 if (rtn != def.RTN_OK)
@@ -792,7 +837,7 @@ namespace Garage_USB
                     Console.WriteLine("preview_image check noise failed");
                     return def.RTN_FAIL; ;
                 }
-                preview_noise = 1;
+                g.preview_noise = 1;
             }
 
             int frame_len = 4 * config.sensor_width * config.sensor_height;
@@ -802,7 +847,7 @@ namespace Garage_USB
                 Console.WriteLine("capture_frame failed");
                 return def.RTN_FAIL;
             }
-            fpimage.bmp_frame(frame_data, bkg_img);
+            fpimage.bmp_frame(frame_data, g.bkg_img);
             
 
             Image img;
@@ -848,20 +893,24 @@ namespace Garage_USB
                 }
  
             }));
-            if(button_down==0)
+            if(config.btn_check==1)
             {
-                con.stop_pull_button();
-                con.check_button_short();
-                rtn = con.wait_button(2);
-                if (rtn == def.RTN_OK)
+                if (g.button_down == 0)
                 {
-                    button_down = 1;
-                }
-                else
-                {
-                    button_down = 0;
+                    con.stop_pull_button();
+                    con.check_button_short();
+                    rtn = con.wait_button(2);
+                    if (rtn == def.RTN_OK)
+                    {
+                        g.button_down = 1;
+                    }
+                    else
+                    {
+                       g.button_down = 0;
+                    }
                 }
             }
+
             return def.RTN_OK;
         }
 
@@ -875,11 +924,12 @@ namespace Garage_USB
             {
                 int sw_gain = Convert.ToInt32(tb_gain.Text);
                 avg_img = bmp_helper.format_from_bytes(avg_frame, sw_gain);
-                fpimage.gain_frame(avg_frame, avg_frame, sw_gain);
-                avg = fpimage.average_frame(avg_frame);
+                fpimage.gain_frame(avg_frame, avg_frame, sw_gain);   
             }
             else
                 avg_img = bmp_helper.format_from_bytes(avg_frame, 0);
+
+            avg = fpimage.average_frame(avg_frame);
 
             int signal = 255 - para[2];
             double f_noise = float.Parse(lb_noise.Text);
@@ -940,7 +990,7 @@ namespace Garage_USB
                     call_fail(def.BIN_CODE_07);
                     return def.RTN_FAIL;
                 }
-                fpimage.bmp_frame(frame_data, bkg_img);
+                fpimage.bmp_frame(frame_data, g.bkg_img);
                 Buffer.BlockCopy(frame_data, 0, frame10, i * config.sensor_width * config.sensor_height, config.sensor_width * config.sensor_height);
             }
             avg = fpimage.merge_frames(frame10, 10, avg_frame);
@@ -960,7 +1010,7 @@ namespace Garage_USB
             byte[] image = new byte[config.sensor_width * config.sensor_height];
             while(true)
             {
-                if (live_state == 0)
+                if (g.live_state == 0)
                 {
                     Console.WriteLine("do preview abort!");
                     thread_live = null; 
@@ -975,91 +1025,21 @@ namespace Garage_USB
                 }
             }   
         }
-
-        public void do_press()
-        {
-            int rtn = def.RTN_FAIL;
-            press_counter = 80;
-            ui_tr.Start();
-            byte[] frame_data = new byte[config.sensor_width * config.sensor_height];
-            //preview image
-            while (press_counter > 0)
-            {
-                rtn = preview_image(frame_data);
-                if (rtn != device.ERR_OK)
-                {
-                    Console.WriteLine("capture_frame failed");
-                    set_process(def.stage_calibrate, def.RTN_FAIL);
-                    call_fail(def.BIN_CODE_06);
-                    thread_press = null;
-                    return;
-                }
-                press_counter--;
-            }
-           
-
-            if (average_check(frame_data) == def.RTN_FAIL)
-            {
-                thread_press = null;
-                return;
-            }
-
-            //check button again for final
-            if (button_down == 0)
-            {
-                Console.WriteLine("button down check failed");
-                set_process(def.stage_press, def.RTN_FAIL);
-                call_fail(def.BIN_CODE_15);
-                thread_press = null;
-                return;
-            }
-
-
-            if (check_result())
-            {
-                set_process(def.stage_result, def.RTN_OK);
-                set_process(def.stage_result_ok, def.RTN_OK);
-                log_info();
-            }
-            thread_press = null;
-
-        }
-
         private void ui_tr_event(object source, System.Timers.ElapsedEventArgs e)
         {
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
-                if (ssm_state == def.stage_start)
+                if (g.ssm_state == def.stage_calibrate)
                 {
-                    if (btn_tip_download.BackColor == Color.White)
-                        btn_tip_download.BackColor = Color.Blue;
-                    else
-                        btn_tip_download.BackColor = Color.White;
-                }
-                else if (ssm_state == def.stage_restart)
-                {
-                    if (btn_tip_calibrate.BackColor == Color.White)
+                    if (btn_tip_blink.BackColor == Color.White)
                     {
-                        btn_tip_calibrate.BackColor = Color.Blue;
-                    }
-                    else if (btn_tip_calibrate.BackColor == Color.Blue)
-                    {
-                        btn_tip_calibrate.BackColor = Color.White;
-                    }
-                }
-                else if(ssm_state == def.stage_calibrate)
-                {
-                    if (btn_tip_press.BackColor == Color.White)
-                    {
-                        btn_tip_press.BackColor = Color.Blue;
-                        if(button_down==0)
+                        if (g.button_down == 0)
                             btn_tip_blink.BackColor = Color.Blue;
                         else
                             btn_tip_blink.BackColor = Color.Green;
                     }
-                    else if (btn_tip_press.BackColor == Color.Blue)
+                    else if (btn_tip_blink.BackColor == Color.Blue)
                     {
-                        btn_tip_press.BackColor = Color.White;
                         btn_tip_blink.BackColor = Color.White;
                     }
                 }
@@ -1077,8 +1057,8 @@ namespace Garage_USB
                     switch (m.WParam.ToInt32())
                     {
                         case def.DBT_DEVNODES_CHANGED:
-                            event_device_changed += 1;
-                            Console.WriteLine("device changed! "+ event_device_changed.ToString());
+                            g.event_device_changed += 1;
+                            Console.WriteLine("device changed! "+ g.event_device_changed.ToString());
                             break;
 
                         default:
@@ -1119,210 +1099,105 @@ namespace Garage_USB
                 }
                 if(config.single_module!=1)
                     con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
-                Console.WriteLine("call fail! " + code.ToString() + " stage=" + ssm_state);
+                Console.WriteLine("call fail! " + code.ToString() + " stage=" + g.ssm_state);
                 if (thread != null)
                 {
-                    ram_counter_bad++;
+                    g.ram_counter_bad++;
                     this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
                     {
-                        lb_pf.Text = ram_counter_good.ToString() + "/" + ram_counter_bad.ToString();
+                        lb_pf.Text = g.ram_counter_good.ToString() + "/" + g.ram_counter_bad.ToString();
                     }));
                 }
                 btn_start.BackColor = Color.White;
                 thread = null;
-                working = 0;
+                g.working = 0;
                 ui_tr.Stop();
             }));
             Thread.Sleep(1500);
         }
             private void set_process(int stage,int code)
         {
-            ssm_state = stage;
+            g.ssm_state = stage;
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
-                if (stage==def.stage_start)
+                pb_process.Value = stage;
+               /* if (stage==def.stage_start)
                 {
-                    btn_tip_powerup.BackColor = Color.White;
-                    btn_tip_download.BackColor = Color.White;
-                    btn_tip_restart.BackColor = Color.White;
-                    btn_tip_calibrate.BackColor = Color.White;
-                    btn_tip_press.BackColor = Color.White;
-                    btn_tip_result.BackColor = Color.White;
-                    tb_log.Text = "Start Testing\r\n";
+                    pb_process.Value = 1;
                     return;
                 }
                 if(stage==def.stage_power_up)
                 {
-                    if(code==def.RTN_OK)
-                    {
-                        tb_log.Text += "Power Up test Pass\r\n";
-                        btn_tip_powerup.BackColor = Color.Green;
-                    }    
-                    else
-                    {
-                        tb_log.Text += "Power Up test fail\r\n";
-                        btn_tip_powerup.BackColor = Color.Red;
-                    }
+                    pb_process.Value = 17;
                         
                 }
                 if (stage == def.stage_download)
                 {
-                    if (code == def.RTN_OK)
-                    {
-                        tb_log.Text += "Download ok\r\n";
-                        btn_tip_download.BackColor = Color.Green;
-                    }
-                    else
-                    {
-                        tb_log.Text += "Download fail\r\n";
-                        btn_tip_download.BackColor = Color.Red;
-                    }
+                    pb_process.Value = 35;
                 }
                 if (stage == def.stage_restart)
                 {
-                    if (code == def.RTN_OK)
-                    {
-                        tb_log.Text += "Restart ok\r\n";
-                        btn_tip_restart.BackColor = Color.Green;
-                    }
-                    else
-                    {
-                        tb_log.Text += "Restart fail\r\n";
-                        btn_tip_restart.BackColor = Color.Red;
-                    }
+                    pb_process.Value = 53;
                 }
                 if (stage == def.stage_calibrate)
                 {
-                    if (code == def.RTN_OK)
-                    {
-                        tb_log.Text += "calibrate ok\r\n";
-                        btn_tip_calibrate.BackColor = Color.Green;
-                    }
-                    else
-                    {
-                        tb_log.Text += "calibrate fail\r\n";
-                        btn_tip_calibrate.BackColor = Color.Red;
-                    }
+                    pb_process.Value = 70;
                 }
                 if (stage == def.stage_press)
                 {
-                    if (code == def.RTN_OK)
-                    {
-                        tb_log.Text += "press ok\r\n";
-                        btn_tip_press.BackColor = Color.Green;
-                    }
-                    else
-                    {
-                        tb_log.Text += "press fail\r\n";
-                        btn_tip_press.BackColor = Color.Red;
-                    }
+                    pb_process.Value = 85;
                 }
                 if (stage == def.stage_result)
                 {
-                    if (code == def.RTN_OK)
-                    {
-                        tb_log.Text += "test ok\r\n";
-                        btn_tip_result.BackColor = Color.Green;
-                    }
-                    else
-                    {
-                        tb_log.Text += "test fail\r\n";
-                        btn_tip_result.BackColor = Color.Red;
-                    }
-                }
+                    pb_process.Value = 100;
+                }*/
             }));
         }
 
-        void load_config()
-        {
-            string config_path = Application.StartupPath + @"\config.csv";
-            Console.WriteLine("config_path !"+ config_path);
-            FileStream config_fs = new FileStream(config_path, FileMode.Open, FileAccess.Read);
-            csv_log.csv2dt(config_fs, 0, dt_config);
-            config.project_name = dt_config.Rows[0]["Project"].ToString();
-            config.product_code = dt_config.Rows[0]["Product"].ToString();
-            config.sensor_width = Convert.ToInt32(dt_config.Rows[0]["sensor_width"]);
-            config.sensor_height = Convert.ToInt32(dt_config.Rows[0]["sensor_height"]);
-            config.avg_th = Convert.ToInt32(dt_config.Rows[0]["avg_th"]);
-            config.rv_th = Convert.ToInt32(dt_config.Rows[0]["rv_th"]);
-            config.c_th_high = Convert.ToInt32(dt_config.Rows[0]["c_th_high"]);
-            config.c_th_low = Convert.ToInt32(dt_config.Rows[0]["c_th_low"]);
-            config.v_th = Convert.ToInt32(dt_config.Rows[0]["v_th"]);
-            config.version = dt_config.Rows[0]["Version"].ToString();
-            config.station = Convert.ToInt32(dt_config.Rows[0]["Station"]);
-            config.keycode = dt_config.Rows[0]["Keycode"].ToString();
-            config.channel = Convert.ToInt32(dt_config.Rows[0]["Channel"]);
-            config.auto_start = Convert.ToInt32(dt_config.Rows[0]["auto_start"]);
-            config.comm_type = Convert.ToInt32(dt_config.Rows[0]["comm_type"]);
-            config.single_module = Convert.ToInt32(dt_config.Rows[0]["single_module"]);
-            config.test_only = Convert.ToInt32(dt_config.Rows[0]["test_only"]);
-            config.simple_test = Convert.ToInt32(dt_config.Rows[0]["simple_test"]);
-            if (config.keycode == "3230")
-            {
-                config.firmware_type = def.COSTYPE_USB_MOH_F323;
-                config.dev_type = def.DEVTYPE_USB_MOH_F323;
-            }    
-            else if(config.keycode=="8081")
-            {
-                config.firmware_type = def.COSTYPE_USB_MOCH_MOH_BLD;
-                config.dev_type = def.DEVTYPE_USB_MOCH_MOH_BLD;
-            }else if(config.keycode =="7060")
-            {
-                config.firmware_type = def.COSTYPE_SERIAL_F225;
-                config.dev_type = def.DEVTYPE_SERIAL_F225;
-            }
-            else
-            {
-
-            }
-
-            config.comport = dt_config.Rows[0]["comport"].ToString();
-            config_fs.Close();
-            Console.WriteLine("config loaded !");
-        }
+       
         void open_create_log()
         {
             FileStream log_fs;
             //if csv not exsits, creat. if exsit, load it
-            log_path = Application.StartupPath + @"\log-" + config.project_name + "-" + config.product_code + "-" + config.station.ToString() + ".csv";
-            Console.WriteLine("log_path! "+ log_path);
+            g.log_path = Application.StartupPath + @"\log-" + config.project_name + "-" + config.product_code + "-" + config.station.ToString() + ".csv";
+            Console.WriteLine("log_path! "+ g.log_path);
             try
             {
-                log_fs = new FileStream(log_path, FileMode.Open, FileAccess.Read);
-                csv_log.csv2dt(log_fs, 0, dt);
+                log_fs = new FileStream(g.log_path, FileMode.Open, FileAccess.Read);
+                csv_log.csv2dt(log_fs, 0, g.dt);
                 Console.WriteLine("Log loaded ");
 
             }
             catch (Exception err)
             {
-                log_fs = new FileStream(log_path, FileMode.OpenOrCreate, FileAccess.Write);
-                csv_log.gen_table(log_path, dt);
-                csv_log.dt2csv(log_fs, dt);
+                log_fs = new FileStream(g.log_path, FileMode.OpenOrCreate, FileAccess.Write);
+                csv_log.gen_table(g.log_path, g.dt);
+                csv_log.dt2csv(log_fs, g.dt);
                 Console.WriteLine("Log created ");
 
             }
             log_fs.Close();
+            
         }
         void log_info()
         {
             //return;
 
             FileStream log_fs;
-            log_fs = new FileStream(log_path, FileMode.Open, FileAccess.Write);
-            int dt_count = dt.Rows.Count;
+            log_fs = new FileStream(g.log_path, FileMode.Open, FileAccess.Write);
+            int dt_count = g.dt.Rows.Count;
             int max_id = 0;
             for(int i=0;i<dt_count;i++)
             {
-                if (max_id < Convert.ToInt32(dt.Rows[i]["ID"]))
-                    max_id = Convert.ToInt32(dt.Rows[i]["ID"]);
+                if (max_id < Convert.ToInt32(g.dt.Rows[i]["ID"]))
+                    max_id = Convert.ToInt32(g.dt.Rows[i]["ID"]);
             }
-            DataRow dr = dt.NewRow();
+            DataRow dr = g.dt.NewRow();
             dr["ID"] = max_id + 1;
             dr["Project"] = lb_project.Text;
             dr["Product"] = lb_product.Text;
             dr["Station"] = lb_station.Text;
             dr["Date"] = DateTime.Now.ToString("F");
-            dr["Remains"] = Convert.ToInt32(lb_count.Text);
             dr["Current"] = Convert.ToInt32(lb_current.Text);
             //dr["Voltage"] = Convert.ToFloat(lb_voltage.Text);
             float v = 0;
@@ -1331,12 +1206,12 @@ namespace Garage_USB
             else
                 dr["Voltage"] = 0.0;
 
-            if (ssm_state >= def.stage_download)
+            if (g.ssm_state >= def.stage_download)
                 dr["Download"] = 1;
             else
                 dr["Download"] = 0;
 
-            if (ssm_state >= def.stage_restart)
+            if (g.ssm_state >= def.stage_restart)
                 dr["Activate"] = 1;
             else
                 dr["Activate"] = 0;
@@ -1350,23 +1225,23 @@ namespace Garage_USB
             dr["dr"] = float.Parse(lb_dr.Text);
             dr["RV"] = Convert.ToInt32(lb_rv.Text);
             dr["RV"] = Convert.ToInt32(lb_rv.Text);
-            dr["Stage"] = ssm_state;
-            if (ssm_state == def.stage_result_ok)
+            dr["Stage"] = g.ssm_state;
+            if (g.ssm_state == def.stage_result_ok)
                 dr["Result"] = "PASS";//good
             else
                 dr["Result"] = "FAIL";//not finished
             
             dr["BIN"] = Convert.ToInt32(lb_bin.Text);
-            dt.Rows.Add(dr);
-            csv_log.dt2csv(log_fs, dt);
+            g.dt.Rows.Add(dr);
+            csv_log.dt2csv(log_fs, g.dt);
             log_fs.Close();
             Console.WriteLine("Log stored ");
-            //char[] line = dt.Rows[max_id].ToString().ToCharArray();
+
             if (config.simple_test == 1 && config.simple_test == 0)//close it for now
             {
                 string strline = "";
-                for (int j = 0; j < dt.Columns.Count; j++)
-                    strline += Convert.ToString(dt.Rows[max_id][j]);
+                for (int j = 0; j < g.dt.Columns.Count; j++)
+                    strline += Convert.ToString(g.dt.Rows[max_id][j]);
                 char[] line = strline.ToCharArray();
                 device.write_flash(line, 0, line.Length);
                 Console.WriteLine("Log in module stored ");
@@ -1376,7 +1251,7 @@ namespace Garage_USB
 
         private void btn_live_Click(object sender, EventArgs e)
         {
-            preview_noise = 0;
+            g.preview_noise = 0;
             Console.WriteLine("BTN start clicked ");
             if (thread_live != null)
             {
@@ -1384,12 +1259,12 @@ namespace Garage_USB
                 return;
             }
                
-            live_state = 1;
+            g.live_state = 1;
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP);
             Thread.Sleep(1500);
             device.disconnect();
             int rtn = device.connect(config.firmware_type);
-            rtn = device.get_bg(bkg_img);
+            rtn = device.get_bg(g.bkg_img);
             thread_live = new Thread(threadLive);
             thread_live.IsBackground = true;
             thread_live.Start();
@@ -1400,64 +1275,10 @@ namespace Garage_USB
         private void btn_stop_Click(object sender, EventArgs e)
         {
             Console.WriteLine("BTN stop clicked ");
-            live_state = 0;
+            g.live_state = 0;
             Thread.Sleep(100);
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
             thread_live = null;        
-        }
-
-        private void btn_pressagain_Click(object sender, EventArgs e)
-        {
-            if (thread_press != null)
-                return;
-            set_process(def.stage_start, def.RTN_OK);
-            init_tips();
-            init_lbs();
-            img_preview.Image = null;
-            
-
-            con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP);
-            Thread.Sleep(3000);
-
-            set_process(def.stage_power_up, def.RTN_OK);
-            set_process(def.stage_download, def.RTN_OK);
-            set_process(def.stage_restart, def.RTN_OK);
-            set_process(def.stage_calibrate, def.RTN_OK);
-
-            device.disconnect();
-            int rtn = device.connect(config.firmware_type);
-            if(rtn==def.RTN_FAIL)
-            {
-                Console.WriteLine("thread press connect failed");
-                set_process(def.stage_press, def.RTN_FAIL);
-                call_fail(def.BIN_CODE_01);
-                thread_press = null;
-                return;
-            }
-
-            rtn = device.calibrate();
-            if (rtn != device.ERR_OK)
-            {
-                Console.WriteLine("thread calibrate after restart failed");
-                set_process(def.stage_calibrate, def.RTN_FAIL);
-                call_fail(def.BIN_CODE_04);
-                thread_press = null;
-                return;
-            }
-
-            rtn = device.get_bg(bkg_img);
-            if (rtn == def.RTN_FAIL)
-            {
-                Console.WriteLine("thread press get_bg failed");
-                set_process(def.stage_press, def.RTN_FAIL);
-                call_fail(def.BIN_CODE_01);
-                thread_press = null;
-                return;
-            }
-
-            thread_press = new Thread(threadPress);
-            thread_press.IsBackground = true;
-            thread_press.Start();
         }
 
         private void btn_poweron_Click(object sender, EventArgs e)
@@ -1498,37 +1319,6 @@ namespace Garage_USB
 
         private void btn_led_0_Click(object sender, EventArgs e)
         {
-
-        }
-
-        private void btn_read_Click(object sender, EventArgs e)
-        {
-            con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP);
-            Thread.Sleep(1500);
-            device.disconnect();
-            int rtn = device.connect(config.firmware_type);
-            if (rtn == def.RTN_FAIL)
-            {
-                Console.WriteLine(" btn_read_Click connect failed");
-                return;
-            }
-            char[] buf = new char[129];
-            int len = 128;
-            rtn = device.read_flash(buf, 0, ref len);
-            if (rtn == def.RTN_FAIL)
-            {
-                Console.WriteLine(" btn_read_Click read_flash failed");
-                return;
-            }
-            string s = new string(buf);
-            tb_read.Text = s;
-            rtn = get_all_info(1);
-            if (rtn == def.RTN_FAIL)
-            {
-                Console.WriteLine(" btn_read_Click get_all_info failed");
-                return;
-            }
-            con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
 
         }
 

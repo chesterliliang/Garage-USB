@@ -80,10 +80,6 @@ namespace Garage_USB
             this.label10 = new System.Windows.Forms.Label();
             this.lb_voltage = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.lb_dr = new System.Windows.Forms.Label();
-            this.label19 = new System.Windows.Forms.Label();
-            this.lb_snr = new System.Windows.Forms.Label();
-            this.label17 = new System.Windows.Forms.Label();
             this.lb_noise = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.lb_version = new System.Windows.Forms.Label();
@@ -105,6 +101,7 @@ namespace Garage_USB
             this.label16 = new System.Windows.Forms.Label();
             this.label18 = new System.Windows.Forms.Label();
             this.btn_reload = new System.Windows.Forms.Button();
+            this.cmb_channel = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.img_preview)).BeginInit();
             this.groupBox3.SuspendLayout();
@@ -223,7 +220,7 @@ namespace Garage_USB
             // 
             this.pb_process.BackColor = System.Drawing.SystemColors.Control;
             this.pb_process.ForeColor = System.Drawing.Color.PaleGreen;
-            this.pb_process.Location = new System.Drawing.Point(10, 60);
+            this.pb_process.Location = new System.Drawing.Point(10, 52);
             this.pb_process.Name = "pb_process";
             this.pb_process.Size = new System.Drawing.Size(531, 12);
             this.pb_process.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
@@ -319,6 +316,8 @@ namespace Garage_USB
             // cb_ns
             // 
             this.cb_ns.AutoSize = true;
+            this.cb_ns.Checked = true;
+            this.cb_ns.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cb_ns.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.cb_ns.Location = new System.Drawing.Point(759, 48);
             this.cb_ns.Name = "cb_ns";
@@ -463,6 +462,8 @@ namespace Garage_USB
             // cb_calibrate
             // 
             this.cb_calibrate.AutoSize = true;
+            this.cb_calibrate.Checked = true;
+            this.cb_calibrate.CheckState = System.Windows.Forms.CheckState.Checked;
             this.cb_calibrate.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.cb_calibrate.Location = new System.Drawing.Point(202, 35);
             this.cb_calibrate.Name = "cb_calibrate";
@@ -663,10 +664,6 @@ namespace Garage_USB
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.lb_dr);
-            this.groupBox2.Controls.Add(this.label19);
-            this.groupBox2.Controls.Add(this.lb_snr);
-            this.groupBox2.Controls.Add(this.label17);
             this.groupBox2.Controls.Add(this.lb_noise);
             this.groupBox2.Controls.Add(this.label8);
             this.groupBox2.Controls.Add(this.lb_version);
@@ -693,46 +690,6 @@ namespace Garage_USB
             this.groupBox2.TabIndex = 16;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Test Info";
-            // 
-            // lb_dr
-            // 
-            this.lb_dr.AutoSize = true;
-            this.lb_dr.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_dr.Location = new System.Drawing.Point(238, 140);
-            this.lb_dr.Name = "lb_dr";
-            this.lb_dr.Size = new System.Drawing.Size(22, 18);
-            this.lb_dr.TabIndex = 33;
-            this.lb_dr.Text = "-1";
-            // 
-            // label19
-            // 
-            this.label19.AutoSize = true;
-            this.label19.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label19.Location = new System.Drawing.Point(175, 140);
-            this.label19.Name = "label19";
-            this.label19.Size = new System.Drawing.Size(31, 18);
-            this.label19.TabIndex = 32;
-            this.label19.Text = "DR";
-            // 
-            // lb_snr
-            // 
-            this.lb_snr.AutoSize = true;
-            this.lb_snr.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_snr.Location = new System.Drawing.Point(238, 117);
-            this.lb_snr.Name = "lb_snr";
-            this.lb_snr.Size = new System.Drawing.Size(22, 18);
-            this.lb_snr.TabIndex = 31;
-            this.lb_snr.Text = "-1";
-            // 
-            // label17
-            // 
-            this.label17.AutoSize = true;
-            this.label17.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label17.Location = new System.Drawing.Point(174, 117);
-            this.label17.Name = "label17";
-            this.label17.Size = new System.Drawing.Size(41, 18);
-            this.label17.TabIndex = 30;
-            this.label17.Text = "SNR";
             // 
             // lb_noise
             // 
@@ -811,7 +768,7 @@ namespace Garage_USB
             // 
             this.label13.AutoSize = true;
             this.label13.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label13.Location = new System.Drawing.Point(874, 19);
+            this.label13.Location = new System.Drawing.Point(876, 9);
             this.label13.Name = "label13";
             this.label13.Size = new System.Drawing.Size(57, 18);
             this.label13.TabIndex = 33;
@@ -821,7 +778,7 @@ namespace Garage_USB
             // 
             this.lb_station.AutoSize = true;
             this.lb_station.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_station.Location = new System.Drawing.Point(938, 19);
+            this.lb_station.Location = new System.Drawing.Point(939, 9);
             this.lb_station.Name = "lb_station";
             this.lb_station.Size = new System.Drawing.Size(13, 18);
             this.lb_station.TabIndex = 34;
@@ -831,7 +788,7 @@ namespace Garage_USB
             // 
             this.label15.AutoSize = true;
             this.label15.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label15.Location = new System.Drawing.Point(874, 44);
+            this.label15.Location = new System.Drawing.Point(876, 29);
             this.label15.Name = "label15";
             this.label15.Size = new System.Drawing.Size(58, 18);
             this.label15.TabIndex = 37;
@@ -841,7 +798,7 @@ namespace Garage_USB
             // 
             this.lb_pf.AutoSize = true;
             this.lb_pf.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_pf.Location = new System.Drawing.Point(938, 44);
+            this.lb_pf.Location = new System.Drawing.Point(938, 29);
             this.lb_pf.Name = "lb_pf";
             this.lb_pf.Size = new System.Drawing.Size(13, 18);
             this.lb_pf.TabIndex = 38;
@@ -950,7 +907,7 @@ namespace Garage_USB
             // btn_reload
             // 
             this.btn_reload.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.btn_reload.Location = new System.Drawing.Point(757, 61);
+            this.btn_reload.Location = new System.Drawing.Point(877, 60);
             this.btn_reload.Name = "btn_reload";
             this.btn_reload.Size = new System.Drawing.Size(75, 23);
             this.btn_reload.TabIndex = 55;
@@ -958,12 +915,23 @@ namespace Garage_USB
             this.btn_reload.UseVisualStyleBackColor = true;
             this.btn_reload.Click += new System.EventHandler(this.btn_reload_Click);
             // 
+            // cmb_channel
+            // 
+            this.cmb_channel.Font = new System.Drawing.Font("Arial Rounded MT Bold", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.cmb_channel.FormattingEnabled = true;
+            this.cmb_channel.Location = new System.Drawing.Point(757, 62);
+            this.cmb_channel.Name = "cmb_channel";
+            this.cmb_channel.Size = new System.Drawing.Size(75, 22);
+            this.cmb_channel.TabIndex = 56;
+            this.cmb_channel.SelectedIndexChanged += new System.EventHandler(this.cmb_channel_SelectedIndexChanged);
+            // 
             // Form1
             // 
             this.AcceptButton = this.btn_start;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1008, 661);
+            this.Controls.Add(this.cmb_channel);
             this.Controls.Add(this.btn_reload);
             this.Controls.Add(this.label18);
             this.Controls.Add(this.label16);
@@ -1012,7 +980,6 @@ namespace Garage_USB
         private System.Windows.Forms.Button btn_tip_result;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button btn_live;
-        private System.Windows.Forms.Button btn_result;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Button btn_com;
         private System.Windows.Forms.TextBox tb_com;
@@ -1023,22 +990,13 @@ namespace Garage_USB
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Label lb_project;
-        private System.Windows.Forms.Label lb_product;
-        private System.Windows.Forms.Label lb_sn;
-        private System.Windows.Forms.Label lb_parameter;
-        private System.Windows.Forms.Label lb_graylevel;
-        private System.Windows.Forms.Label lb_rv;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.Label lb_current;
         private System.Windows.Forms.Label label10;
-        private System.Windows.Forms.Label lb_voltage;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label11;
-        private System.Windows.Forms.Label lb_bin;
         private System.Windows.Forms.Button btn_stop;
         private System.Windows.Forms.CheckBox cb_enhance;
-        private System.Windows.Forms.Label lb_version;
         private System.Windows.Forms.Label label12;
         private System.Windows.Forms.Button btn_tip_blink;
         private System.Windows.Forms.Label label13;
@@ -1060,11 +1018,6 @@ namespace Garage_USB
         private System.Windows.Forms.Button btn_clear;
         private System.Windows.Forms.Button btn_get_cv;
         private System.Windows.Forms.CheckBox cb_mp;
-        private System.Windows.Forms.Label lb_dr;
-        private System.Windows.Forms.Label label19;
-        private System.Windows.Forms.Label lb_snr;
-        private System.Windows.Forms.Label label17;
-        private System.Windows.Forms.Label lb_noise;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.GroupBox groupBox4;
         private System.Windows.Forms.Button button2;
@@ -1076,8 +1029,20 @@ namespace Garage_USB
         private System.Windows.Forms.CheckBox cb_cv;
         private System.Windows.Forms.Button btn_reload;
         private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.ProgressBar pb_process;
         public System.Windows.Forms.PictureBox img_preview;
+        public System.Windows.Forms.Label lb_project;
+        public System.Windows.Forms.Label lb_version;
+        public System.Windows.Forms.Label lb_product;
+        public System.Windows.Forms.Label lb_sn;
+        public System.Windows.Forms.Label lb_parameter;
+        public System.Windows.Forms.Label lb_graylevel;
+        public System.Windows.Forms.Label lb_rv;
+        public System.Windows.Forms.Label lb_noise;
+        public System.Windows.Forms.Label lb_voltage;
+        public System.Windows.Forms.Button btn_result;
+        public System.Windows.Forms.Label lb_bin;
+        public System.Windows.Forms.ProgressBar pb_process;
+        private System.Windows.Forms.ComboBox cmb_channel;
     }
 }
 

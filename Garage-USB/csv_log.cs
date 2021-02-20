@@ -10,6 +10,33 @@ namespace Garage_USB
     public class csv_log
     {
         public static string path;
+
+
+        public static void open_create_log(fang g)
+        {
+            FileStream log_fs;
+            g.dt = new DataTable();
+            //if csv not exsits, creat. if exsit, load it
+            g.log_path = g.ref_path + @"log\" + config.project_name + "-" + config.product_code + "-" + config.station.ToString() + ".csv";
+            Console.WriteLine("log_path! " + g.log_path);
+            try
+            {
+                log_fs = new FileStream(g.log_path, FileMode.Open, FileAccess.Read);
+                csv_log.csv2dt(log_fs, 0, g.dt);
+                Console.WriteLine("Log loaded ");
+
+            }
+            catch (Exception err)
+            {
+                log_fs = new FileStream(g.log_path, FileMode.OpenOrCreate, FileAccess.Write);
+                csv_log.gen_table(g.log_path, g.dt);
+                csv_log.dt2csv(log_fs, g.dt);
+                Console.WriteLine("Log created ");
+
+            }
+            log_fs.Close();
+
+        }
         public static void gen_table(string path, DataTable dt)
         {
             dt.Columns.Add("ID", System.Type.GetType("System.Int32"));
@@ -19,8 +46,6 @@ namespace Garage_USB
             dt.Columns.Add("Gray Level", System.Type.GetType("System.Int32"));
             dt.Columns.Add("RV", System.Type.GetType("System.Int32"));
             dt.Columns.Add("Noise", typeof(float));
-            dt.Columns.Add("SNR", typeof(float));
-            dt.Columns.Add("DR", typeof(float));
             dt.Columns.Add("Current", System.Type.GetType("System.Int32"));
             dt.Columns.Add("Voltage", typeof(float));
             dt.Columns.Add("Download", System.Type.GetType("System.Int32"));

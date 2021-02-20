@@ -10,7 +10,7 @@ namespace Garage_USB
         public static int ERR_FAIL = -1;
         public static int ERR_OK = 0;
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_DownCOS", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_DownCOS", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_DownCOS(char[] sCosPath);
         public static int download_firmware(string path)
         {
@@ -22,7 +22,7 @@ namespace Garage_USB
             return rtn;
         }
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_WriteSN", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_WriteSN", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_WriteSN(char[] sSN, int dev_type);
         public static int set_sn_activiate(string sn, int dev_type)
         {
@@ -34,7 +34,7 @@ namespace Garage_USB
             return rtn;
         }
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_Connect", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_Connect", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_Connect(int type);
 
         public static int connect(int type)
@@ -47,7 +47,7 @@ namespace Garage_USB
 
         }
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_DisConnect", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_DisConnect", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_DisConnect();
         public static int disconnect()
         {
@@ -59,7 +59,7 @@ namespace Garage_USB
         }
 
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_Calibrate", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_Calibrate", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_Calibrate();
         public static int calibrate()
         {
@@ -70,7 +70,7 @@ namespace Garage_USB
             return rtn;
         }
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_Capture_Frame", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_Capture_Frame", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_Capture_Frame(char mode, byte[] frame, ref int len);
 
         public static int capture_frame(int mode, byte[] frame, ref int len)
@@ -84,7 +84,7 @@ namespace Garage_USB
             return rtn;
         }
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_Config", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_Config", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_Config(char mode, byte[] list, ref int len);
         public static int config(int mode, byte[] list,ref int len)
         {
@@ -96,13 +96,13 @@ namespace Garage_USB
             return rtn;
         }
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_Gainth", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_Gainth", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_Gainth( char mode, byte[] para);
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_COSinfo", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_COSinfo", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_COSinfo( char mode, byte[] info);
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_GetVersion", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_GetVersion", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_GetVersion(byte[] version, ref int len);
         public static int version(byte[] version, ref int len)
         {
@@ -113,7 +113,7 @@ namespace Garage_USB
             return rtn;
         }
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_Write", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_Write", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_Write(char[] buf, int offset, int len);
         public static int write_flash(char[] buf, int offset, int len)
         {
@@ -127,7 +127,7 @@ namespace Garage_USB
             return rtn;
         }
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_Read", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_Read", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_Read( int offset, byte[] buf, ref int len);
         public static int read_flash(char[] buf, int offset, ref int len)
         {
@@ -143,7 +143,7 @@ namespace Garage_USB
             return rtn;
         }
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_GetDevInfo", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_GetDevInfo", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_GetDevInfo(byte[] info,ref int len);
         public static int devinfo(byte[] version, ref int len)
         {
@@ -154,7 +154,7 @@ namespace Garage_USB
             return rtn;
         }
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_Abort", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_Abort", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_Abort();
         public static int abort()
         {
@@ -165,7 +165,7 @@ namespace Garage_USB
             return rtn;
         }
 
-        [DllImport("product.dll", EntryPoint = "PAPRO_GetBgImage", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_GetBgImage", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_GetBgImage(byte[] bgimg);
 
         public static int get_bg(byte[] bgimg)

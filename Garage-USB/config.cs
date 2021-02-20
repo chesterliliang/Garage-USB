@@ -75,6 +75,8 @@ namespace Garage_USB
             config.firmware_type = Convert.ToInt32(g.dt_configs.Rows[i]["COSTYPE"]);
             config.dev_type = Convert.ToInt32(g.dt_configs.Rows[i]["DEVTYPE"]);
             config.btn_check = Convert.ToInt32(g.dt_configs.Rows[i]["btn_check"]);
+            g.firmware_path = g.ref_path + @"data\" + config.keycode + def.firmware_file;
+            Console.WriteLine("firmware path = " + g.firmware_path);
         }
 
         public static int init_projects(fang g)

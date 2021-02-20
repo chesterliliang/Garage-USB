@@ -57,5 +57,39 @@ namespace Garage_USB
 
         public static int COSTYPE_USB_MOCH_MOH_BLD = 54;
         public static int DEVTYPE_USB_MOCH_MOH_BLD = 29;
+
+        public static int DOWNLOAD = 1000;
+        public static int ACTIVE = 1001;
+        public static int TEST = 1002;
+
+        public static int FIRST_POWER_UP = 1;
+        public static int SECOND_POWER_UP = 2;
+
+        public static int LABLE_PROJECT = 0;
+        public static int LABLE_PRODUCT = 1;
+        public static int LABLE_SN = 2;
+        public static int LABLE_VOLTAGE = 3;
+        public static int LABLE_CURRENT = 4;
+        public static int LABLE_PARAMETER = 5;
+        public static int LABLE_VERSION = 6;
+        public static int LABLE_RV = 7;
+        public static int LABLE_GRAYLEVEL = 8;
+        public static int LABLE_NOISE = 9;
+        public static int LABLE_BIN = 10;
+        public static int LABLE_STATION = 11;
+        public static int lable_count = 12;
+
+        public const int FUNC_POWER_UP = 1;
+        public const int FUNC_DOWNLOAD = 2;
+        public const int FUNC_ACTIVE = 3;
+        public const int FUNC_GETINFO = 4;
+        public const int FUNC_CALIBRATE = 5;
+        public const int FUNC_NOISE = 6;
+        public const int FUNC_PREVIEW = 7;
+        public const int FUNC_BUTTON = 8;
+        public const int FUNC_FRAME = 9;
+        public const int FUNC_SINGAL = 10 ;
+        public const int FUNC_FINAL = 11;
+
     }
 }

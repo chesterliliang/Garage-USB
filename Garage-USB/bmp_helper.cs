@@ -49,7 +49,7 @@ namespace Garage_USB
 
         public static void init(fang g)
         {
-            string ref_path = g.ref_path + @"\files\";
+            string ref_path = g.ref_path + @"files\";
             width = config.sensor_width;
             height = config.sensor_height;
             //init bmp template

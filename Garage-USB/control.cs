@@ -54,6 +54,11 @@ namespace Garage_USB
 
         public control()
         {
+            set_channel();
+        }
+
+        public void set_channel()
+        {
             channel = (byte)config.channel;
             power_up[3] = channel;
             power_down[3] = channel;

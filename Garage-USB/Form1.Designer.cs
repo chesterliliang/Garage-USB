@@ -102,6 +102,9 @@ namespace Garage_USB
             this.label18 = new System.Windows.Forms.Label();
             this.btn_reload = new System.Windows.Forms.Button();
             this.cmb_channel = new System.Windows.Forms.ComboBox();
+            this.lb_err_message = new System.Windows.Forms.Label();
+            this.lb_station_type = new System.Windows.Forms.Label();
+            this.label17 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.img_preview)).BeginInit();
             this.groupBox3.SuspendLayout();
@@ -735,7 +738,7 @@ namespace Garage_USB
             // 
             this.label11.AutoSize = true;
             this.label11.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label11.Location = new System.Drawing.Point(177, 366);
+            this.label11.Location = new System.Drawing.Point(350, 355);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(68, 36);
             this.label11.TabIndex = 26;
@@ -745,11 +748,11 @@ namespace Garage_USB
             // 
             this.lb_bin.AutoSize = true;
             this.lb_bin.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_bin.Location = new System.Drawing.Point(251, 366);
+            this.lb_bin.Location = new System.Drawing.Point(424, 355);
             this.lb_bin.Name = "lb_bin";
-            this.lb_bin.Size = new System.Drawing.Size(44, 36);
+            this.lb_bin.Size = new System.Drawing.Size(33, 36);
             this.lb_bin.TabIndex = 28;
-            this.lb_bin.Text = "-1";
+            this.lb_bin.Text = "0";
             // 
             // btn_tip_blink
             // 
@@ -925,12 +928,44 @@ namespace Garage_USB
             this.cmb_channel.TabIndex = 56;
             this.cmb_channel.SelectedIndexChanged += new System.EventHandler(this.cmb_channel_SelectedIndexChanged);
             // 
+            // lb_err_message
+            // 
+            this.lb_err_message.AutoSize = true;
+            this.lb_err_message.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lb_err_message.Location = new System.Drawing.Point(76, 355);
+            this.lb_err_message.Name = "lb_err_message";
+            this.lb_err_message.Size = new System.Drawing.Size(0, 36);
+            this.lb_err_message.TabIndex = 57;
+            // 
+            // lb_station_type
+            // 
+            this.lb_station_type.AutoSize = true;
+            this.lb_station_type.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lb_station_type.Location = new System.Drawing.Point(795, 29);
+            this.lb_station_type.Name = "lb_station_type";
+            this.lb_station_type.Size = new System.Drawing.Size(13, 18);
+            this.lb_station_type.TabIndex = 59;
+            this.lb_station_type.Text = "-";
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label17.Location = new System.Drawing.Point(746, 29);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(48, 18);
+            this.label17.TabIndex = 58;
+            this.label17.Text = "TYPE";
+            // 
             // Form1
             // 
             this.AcceptButton = this.btn_start;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1008, 661);
+            this.Controls.Add(this.lb_station_type);
+            this.Controls.Add(this.label17);
+            this.Controls.Add(this.lb_err_message);
             this.Controls.Add(this.cmb_channel);
             this.Controls.Add(this.btn_reload);
             this.Controls.Add(this.label18);
@@ -1043,6 +1078,9 @@ namespace Garage_USB
         public System.Windows.Forms.Label lb_bin;
         public System.Windows.Forms.ProgressBar pb_process;
         private System.Windows.Forms.ComboBox cmb_channel;
+        public System.Windows.Forms.Label lb_err_message;
+        private System.Windows.Forms.Label lb_station_type;
+        private System.Windows.Forms.Label label17;
     }
 }
 

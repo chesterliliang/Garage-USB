@@ -57,8 +57,6 @@ namespace Garage_USB
             dt.Columns.Add("Date", System.Type.GetType("System.DateTime"));
             dt.Columns.Add("Project", System.Type.GetType("System.String"));
             dt.Columns.Add("Product", System.Type.GetType("System.String"));
-
-
         }
 
         public static void save_bmp(string name,byte[] data)

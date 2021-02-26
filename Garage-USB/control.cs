@@ -19,7 +19,8 @@ namespace Garage_USB
         {
             POWER = 1,
             S0 = 2,
-            USB = 3
+            USB = 3,
+            LED = 4
         }
 
         public byte channel = 0;
@@ -52,6 +53,10 @@ namespace Garage_USB
         //a5000901050002aaaa
         public byte[] start_key_check = { 0xa5, 0x00, 0x09, 0, 0x05, 0x00, 0x02, 0xAA, 0xAA };//13
 
+        //a5000901080001aaaa
+        public byte[] led_high = { 0xa5, 0x00, 0x09, 0, 0x0b, 0x00, 0x01, 0xAA, 0xAA };//14
+        //a5000901080002aaaa
+        public byte[] led_low = { 0xa5, 0x00, 0x09, 0, 0x0b, 0x00, 0x02, 0xAA, 0xAA };//15
         public control()
         {
             set_channel();
@@ -73,6 +78,8 @@ namespace Garage_USB
             check_current[3] = channel;
             start_key_clear[3] = channel;
             start_key_check[3] = channel;
+            led_high[3] = channel;
+            led_low[3] = channel;
         }
 
 
@@ -137,7 +144,13 @@ namespace Garage_USB
                     else if (mode == (int)MODE.DOWN)
                         sp.Write(usb_en_low, 0, 9);
                 }
-
+                else if(command == (int)COMMAND.LED)
+                {
+                    if (mode == (int)MODE.UP)
+                        sp.Write(led_high, 0, 9);
+                    else if (mode == (int)MODE.DOWN)
+                        sp.Write(led_low, 0, 9);
+                }
             }
             catch (Exception err)
             {
@@ -196,7 +209,7 @@ namespace Garage_USB
         {
             try
             {
-                sp.Write(check_current, 0, 9);
+                sp.Write(get_cv, 0, 9);
             }
             catch (Exception err)
             {

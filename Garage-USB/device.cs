@@ -23,25 +23,50 @@ namespace Garage_USB
         }
 
         [DllImport("./bin/product.dll", EntryPoint = "PAPRO_WriteSN", CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe int PAPRO_WriteSN(char[] sSN, int dev_type);
-        public static int set_sn_activiate(string sn, int dev_type)
+        public static extern unsafe int PAPRO_WriteSN(char[] sSN, int dev_type, char[] serialname);
+        public static int set_sn_activiate(string sn, int dev_type,string serialname)
         {
             int rtn = ERR_FAIL;
             char[] sn_c = sn.ToCharArray();
             Console.WriteLine("enter set_sn_activiate!");
-            rtn = PAPRO_WriteSN(sn_c, dev_type);
+            if (serialname == null)
+            {
+                char[] void_prt = new char[2];
+                void_prt[0] = (char)0;
+                void_prt[1] = (char)0;//inner strlen<4 then                                                                                                   not set
+                rtn = PAPRO_WriteSN(sn_c, dev_type, void_prt);
+            }
+            else
+            {
+                char[] c_name = serialname.ToCharArray();
+                rtn = PAPRO_WriteSN(sn_c, dev_type, c_name);
+            }
+
+            
             Console.WriteLine("leave set_sn_activiate ! rv = 0x" + String.Format("{0:X000}", rtn));
             return rtn;
         }
 
         [DllImport("./bin/product.dll", EntryPoint = "PAPRO_Connect", CallingConvention = CallingConvention.Cdecl)]
-        public static extern unsafe int PAPRO_Connect(int type);
+        public static extern unsafe int PAPRO_Connect(int type, char[] serialname);
 
-        public static int connect(int type)
+        public static unsafe int connect(int type, string serialname)
         {
+            Console.WriteLine("enter connet! " + type.ToString());
             int rtn = ERR_FAIL;
-            Console.WriteLine("enter connet! "+ type.ToString());
-            rtn = PAPRO_Connect(type);
+            
+            if (serialname == null)
+            {
+                char[] void_prt = new char[2];
+                void_prt[0] = (char)0;
+                void_prt[1] = (char)0;//inner strlen<4 then                                                                                                   not set
+                rtn = PAPRO_Connect(type, void_prt);
+            }
+            else
+            {
+                char[] c_name = serialname.ToCharArray();
+                rtn = PAPRO_Connect(type, c_name);
+            }
             Console.WriteLine("leave connet! rv = 0x" + String.Format("{0:X000}", rtn));
             return rtn;
 

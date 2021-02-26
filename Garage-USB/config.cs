@@ -22,6 +22,7 @@ namespace Garage_USB
         public static string version = "";
         public static string keycode = "";
         public static string comport = "";
+        public static string working_port = "";
         public static int sw_gain = 48;
         public static int firmware_type = 0;
         public static int dev_type = 0;
@@ -34,6 +35,10 @@ namespace Garage_USB
         public static int c_check = 0;
         public static int v_check = 0;
         public static int btn_check = 0;
+        public static int long_wait = 0;
+        public static int locked = 0;
+        public static int counter = 0;
+        public static int led = 0;
 
         public static void init_station(fang g)
         {
@@ -48,11 +53,13 @@ namespace Garage_USB
             config.auto_start = Convert.ToInt32(g.dt_station.Rows[0]["auto_start"]);
             config.single_module = Convert.ToInt32(g.dt_station.Rows[0]["single_module"]);
             config.test_only = Convert.ToInt32(g.dt_station.Rows[0]["test_only"]);
-            config.simple_test = Convert.ToInt32(g.dt_station.Rows[0]["simple_test"]);
             config.comport = g.dt_station.Rows[0]["comport"].ToString();
             config.c_check = Convert.ToInt32(g.dt_station.Rows[0]["c_check"]);
             config.v_check = Convert.ToInt32(g.dt_station.Rows[0]["v_check"]);
-
+            config.locked = Convert.ToInt32(g.dt_station.Rows[0]["locked"]);
+            config.working_port = g.dt_station.Rows[0]["working_port"].ToString();
+            if (config.comm_type == 0)
+                config.working_port = null;
             station_fs.Close();
             station_fs.Dispose();
             Console.WriteLine("station loaded !");
@@ -75,6 +82,10 @@ namespace Garage_USB
             config.firmware_type = Convert.ToInt32(g.dt_configs.Rows[i]["COSTYPE"]);
             config.dev_type = Convert.ToInt32(g.dt_configs.Rows[i]["DEVTYPE"]);
             config.btn_check = Convert.ToInt32(g.dt_configs.Rows[i]["btn_check"]);
+            config.long_wait = Convert.ToInt32(g.dt_configs.Rows[i]["long_wait"]);
+            config.simple_test = Convert.ToInt32(g.dt_configs.Rows[i]["simple_test"]);
+            config.counter = Convert.ToInt32(g.dt_configs.Rows[i]["counter"]);
+            config.led = Convert.ToInt32(g.dt_configs.Rows[i]["led"]);
             g.firmware_path = g.ref_path + @"data\" + config.keycode + def.firmware_file;
             Console.WriteLine("firmware path = " + g.firmware_path);
         }

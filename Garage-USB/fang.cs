@@ -45,6 +45,11 @@ namespace Garage_USB
         public PictureBox img_preview;
         public int await = 0;
 
+        public int active_opt_done = 0;
+        public int download_opt_done = 0;
+
+        public err BIN;
+
         public void control_init()
         {
             con = new control();
@@ -133,10 +138,9 @@ namespace Garage_USB
             else
                 dr["Download"] = 0;
 
-            if (ssm_state >= def.stage_restart)
-                dr["Activate"] = 1;
-            else
-                dr["Activate"] = 0;
+
+            dr["Activate"] = 1;
+
             dr["SN"] = label_list[def.LABLE_SN].Text;
             dr["Version"] = label_list[def.LABLE_VERSION].Text;
             dr["Parameter"] = label_list[def.LABLE_PARAMETER].Text;
@@ -193,7 +197,7 @@ namespace Garage_USB
             if (rtn == def.RTN_FAIL)
             {
                 Console.WriteLine("Power up fn_check_current fail!");
-                rtn = def.BIN_CODE_F2;
+                rtn = BIN.BIN_CODE[3];
                 goto POWER_UP_END;
             }
             float[] cv = con.fn_get_cv();
@@ -202,13 +206,13 @@ namespace Garage_USB
                 if (cv[1] < 1) //pin connect fail
                 {
                     Console.WriteLine("Power up but no current!");
-                    rtn = def.BIN_CODE_F2;
+                    rtn = BIN.BIN_CODE[6];
                     goto POWER_UP_END;
                 }
                 if (cv[1] > 100)//<50
                 {
                     Console.WriteLine("too much current!");
-                    rtn = def.BIN_CODE_F4;
+                    rtn = BIN.BIN_CODE[3];
                     goto POWER_UP_END;
                 }
                 if (config.c_check == 1 && mode == def.SECOND_POWER_UP)
@@ -216,13 +220,13 @@ namespace Garage_USB
                     if (cv[1] < config.c_th_low)
                     {
                         Console.WriteLine("Current below limited!");
-                        rtn = def.BIN_CODE_F2;
+                        rtn = BIN.BIN_CODE[3];
                         goto POWER_UP_END;
                     }
                     if (cv[1] > config.c_th_high)//<30
                     {
                         Console.WriteLine("Current above limited!");
-                        rtn = def.BIN_CODE_F4;
+                        rtn = BIN.BIN_CODE[3];
                         goto POWER_UP_END;
                     }
                 }
@@ -238,6 +242,15 @@ namespace Garage_USB
             POWER_UP_END:
             await = 0;
             return rtn;
+        }
+
+        public int prime_power_down()
+        {
+            Console.WriteLine("enter prime_power_down");
+            event_device_changed = 0;
+            con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
+            await = 0;
+            return def.RTN_OK;
         }
 
         public int prime_wait_device(int time_out)
@@ -259,8 +272,9 @@ namespace Garage_USB
 
         public int prime_detect()
         {
+            Console.WriteLine("enter prime_detect");
             int rtn = device.disconnect();
-            rtn = device.connect(config.firmware_type);
+            rtn = device.connect(config.firmware_type, config.working_port);
             if (rtn == device.ERR_OK)//to check if downloaded
             {
                 rtn = device.abort();//check if activated
@@ -274,14 +288,16 @@ namespace Garage_USB
 
         public int prime_download()
         {
+            Console.WriteLine("enter prime_download");
             int rtn = device.download_firmware(firmware_path);
             if (rtn == def.RTN_OK)
             {
+                download_opt_done = 1;
                 set_process(def.stage_download);
             }
             else
             {
-                rtn = def.BIN_CODE_F3;
+                rtn = BIN.BIN_CODE[5];
                 goto DOWNLOAD_END;
             }
         DOWNLOAD_END:
@@ -290,29 +306,41 @@ namespace Garage_USB
         }
         public int prime_active()
         {
+            Console.WriteLine("enter prime_active");
             int rtn = device.disconnect();
-            rtn = device.connect(config.firmware_type);
+            rtn = device.connect(config.firmware_type, config.working_port);
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread connect after restart failed");
                 set_process(def.stage_calibrate);
-                await = 0;
-                return def.BIN_CODE_01;
+                rtn = BIN.BIN_CODE[7];
+                goto ACTIVE_END;
             }
             rtn = device.disconnect();
-            rtn = device.set_sn_activiate(device.gen_sn(config.station, config.keycode), config.dev_type);
+            rtn = device.set_sn_activiate(device.gen_sn(config.station, config.keycode), config.dev_type, config.working_port);
+            if (rtn == def.RTN_OK)
+            {
+                active_opt_done = 1;
+            }
+            else
+            {
+                rtn = BIN.BIN_CODE[2];
+                goto ACTIVE_END;
+            }
+            rtn = def.RTN_OK;
+        ACTIVE_END:
             await = 0;
-            return def.RTN_OK;
+            return rtn;
         }
 
         public int prime_test_getinfo()
         {
             int rtn = device.disconnect();
-            rtn = device.connect(config.firmware_type);
+            rtn = device.connect(config.firmware_type, config.working_port);
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread connect after restart failed");
-                rtn = def.BIN_CODE_01;
+                rtn = BIN.BIN_CODE[7];
                 goto INFO_END;
             }
 
@@ -322,7 +350,7 @@ namespace Garage_USB
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread devinfo after restart failed");
-                rtn = def.BIN_CODE_02;
+                rtn = BIN.BIN_CODE[8];
                 goto INFO_END;
             }
             string strsn = "";
@@ -341,7 +369,7 @@ namespace Garage_USB
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread version after restart failed");
-                rtn = def.BIN_CODE_02;
+                rtn = BIN.BIN_CODE[8];
                 goto INFO_END;
             }
             string strversion = "";
@@ -359,13 +387,14 @@ namespace Garage_USB
         public int prime_calibrate(int mode)
         {
             int rtn = 0;
-            if(mode==1)
+            Console.WriteLine("enter prime_calibrate");
+            if (mode==1)
             {
                 rtn = device.calibrate();
                 if (rtn != device.ERR_OK)
                 {
                     Console.WriteLine("thread calibrate after restart failed");
-                    rtn = def.BIN_CODE_04;
+                    rtn = BIN.BIN_CODE[4];
                     goto CA_END;
                 }
             }
@@ -376,7 +405,7 @@ namespace Garage_USB
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread config after restart failed");
-                rtn = def.BIN_CODE_03;
+                rtn = BIN.BIN_CODE[9];
                 goto CA_END;
             }
             string strconfig = device.bytesToHexString(list, 7);
@@ -386,7 +415,7 @@ namespace Garage_USB
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("thread get_bg after restart failed");
-                rtn = def.BIN_CODE_05;
+                rtn = BIN.BIN_CODE[9];
                 goto CA_END;
             }
             rtn = def.RTN_OK;
@@ -398,6 +427,7 @@ namespace Garage_USB
         public int prime_check_noise(int gain)
         {
             int rtn = def.RTN_FAIL;
+            Console.WriteLine("enter prime_check_noise");
             //do bg and empty image check
             byte[] empty_frames = new byte[4*config.sensor_width * config.sensor_height * 10];
             byte[] empty_frame = new byte[4*config.sensor_width * config.sensor_height];
@@ -409,7 +439,7 @@ namespace Garage_USB
                 if (rtn != device.ERR_OK)
                 {
                     Console.WriteLine("10 emptet capture_frame failed");
-                    rtn = def.BIN_CODE_07;
+                    rtn = BIN.BIN_CODE[10];
                     goto NOISE_END;
                 }
                 fpimage.bmp_frame(empty_frame, bkg_img);
@@ -434,7 +464,7 @@ namespace Garage_USB
                 label_list[def.LABLE_RV].Text = rv.ToString(); ;
                 int nAvg = (int)empty_avg;
                 label_list[def.LABLE_GRAYLEVEL].Text = nAvg.ToString();
-                rtn = def.BIN_CODE_14;
+                rtn = BIN.BIN_CODE[16];
                 goto NOISE_END;
             }
             float noise = 255 - empty_avg;
@@ -449,13 +479,13 @@ namespace Garage_USB
         {
             byte[] frame_data = new byte[4*config.sensor_width * config.sensor_height];
             int rtn = def.RTN_FAIL;
-
+            Console.WriteLine("enter preview_image");
             int frame_len = 4*config.sensor_width * config.sensor_height;
             rtn = device.capture_frame(0, frame_data, ref frame_len);
             if (rtn != device.ERR_OK)
             {
                 Console.WriteLine("capture_frame failed");
-                rtn = def.BIN_CODE_06;
+                rtn = BIN.BIN_CODE[10];
                 goto PRE_END;
             }
             fpimage.bmp_frame(frame_data, bkg_img);
@@ -485,6 +515,7 @@ namespace Garage_USB
         public int prime_check_button(int wait_time)
         {
             int rtn = def.RTN_FAIL;
+            Console.WriteLine("enter prime_check_button");
             con.stop_pull_button();
             con.check_button_short();
             rtn = con.wait_button(wait_time);
@@ -500,6 +531,7 @@ namespace Garage_USB
         public int prime_get_average_frames(int count)
         {
             int rtn = def.RTN_FAIL;
+            Console.WriteLine("enter prime_get_average_frames");
             byte[] frame_data = new byte[4*config.sensor_width * config.sensor_height];
             byte[] frame10 = new byte[4*10 * config.sensor_width * config.sensor_height];
             avg_frame = new byte[4*config.sensor_width * config.sensor_height];
@@ -514,9 +546,10 @@ namespace Garage_USB
                 {
                     Console.WriteLine("10 capture_frame failed");
                     await = 0;
-                    return def.BIN_CODE_07;
+                    return BIN.BIN_CODE[10];
                 }
-                fpimage.bmp_frame(frame_data, bkg_img);
+                if(config.simple_test==0)
+                    fpimage.bmp_frame(frame_data, bkg_img);
                 Buffer.BlockCopy(frame_data, 0, frame10, i * config.sensor_width * config.sensor_height, config.sensor_width * config.sensor_height);
             }
             avg = fpimage.merge_frames(frame10, count, avg_frame);
@@ -525,6 +558,7 @@ namespace Garage_USB
         }
         public int prime_signal(int gain)
         {
+            Console.WriteLine("enter prime_signal");
             int[] para = fpimage.get_otsu(avg_frame);
             int rv = para[3] - para[2];
             int avg = 0;
@@ -550,13 +584,13 @@ namespace Garage_USB
             if (avg > config.avg_th)
             {
                 Console.WriteLine("press failed avg=" + avg.ToString());
-                rtn = def.BIN_CODE_21;
+                rtn = BIN.BIN_CODE[13];
                 goto SIGNAL_END;
             }
             if (rv < config.rv_th)
             {;
                 Console.WriteLine("press failed rv=" + rv.ToString());
-                rtn = def.BIN_CODE_22;
+                rtn = BIN.BIN_CODE[14];
                 goto SIGNAL_END;
             }
             rtn = def.RTN_OK;
@@ -566,6 +600,8 @@ namespace Garage_USB
         }
         public int prime_final()
         {
+            Console.WriteLine("enter prime_final");
+            con.switch_control((int)control.COMMAND.LED, (int)control.MODE.DOWN);
             btn_result.Text = "PASS";
             btn_result.BackColor = Color.Green;
             ssm_state = def.stage_result_ok;

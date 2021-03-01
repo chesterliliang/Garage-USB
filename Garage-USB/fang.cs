@@ -253,14 +253,14 @@ namespace Garage_USB
             return def.RTN_OK;
         }
 
-        public int prime_wait_device(int time_out)
+        public int prime_wait_device(int time_out_s)
         {
             int wait_first_connect_counter = 0;
             while (event_device_changed < 2)
             {
-                Thread.Sleep(1);
+                Thread.Sleep(1000);
                 wait_first_connect_counter++;
-                if (wait_first_connect_counter > time_out)
+                if (wait_first_connect_counter > time_out_s)
                 {
                     Console.WriteLine("wait_first_connect_counter timeout");
                     break;
@@ -614,7 +614,7 @@ namespace Garage_USB
                 con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
             }
             ram_counter_good++;
-            Thread.Sleep(500);
+            //Thread.Sleep(1500);
             device.disconnect();   
             working = 0;
             await = 0;

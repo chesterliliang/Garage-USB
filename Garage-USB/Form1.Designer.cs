@@ -1035,7 +1035,6 @@ namespace Garage_USB
         private System.Windows.Forms.Button btn_stop;
         private System.Windows.Forms.CheckBox cb_enhance;
         private System.Windows.Forms.Label label12;
-        private System.Windows.Forms.Button btn_tip_blink;
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label lb_station;
         private System.Windows.Forms.Label label15;
@@ -1083,6 +1082,7 @@ namespace Garage_USB
         public System.Windows.Forms.Label lb_err_message;
         private System.Windows.Forms.Label lb_station_type;
         private System.Windows.Forms.Label label17;
+        public System.Windows.Forms.Button btn_tip_blink;
     }
 }
 

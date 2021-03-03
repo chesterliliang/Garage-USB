@@ -39,6 +39,7 @@ namespace Garage_USB
         public int live_state = 0;
         public Label[] label_list;
         public Button btn_result;
+        public Button btn_tip_blink;
         public control con;
         public TextBox tb_com;
         public ProgressBar pb_process;
@@ -193,47 +194,51 @@ namespace Garage_USB
             Console.WriteLine("Power up!");
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP);
             Thread.Sleep(50);
-            rtn = con.fn_check_current();
-            if (rtn == def.RTN_FAIL)
+            if(config.c_check == 1)
             {
-                Console.WriteLine("Power up fn_check_current fail!");
-                rtn = BIN.BIN_CODE[3];
-                goto POWER_UP_END;
-            }
-            float[] cv = con.fn_get_cv();
-            if (cv != null)
-            {
-                if (cv[1] < 1) //pin connect fail
+                rtn = con.fn_check_current();
+                if (rtn == def.RTN_FAIL)
                 {
-                    Console.WriteLine("Power up but no current!");
-                    rtn = BIN.BIN_CODE[6];
-                    goto POWER_UP_END;
-                }
-                if (cv[1] > 100)//<50
-                {
-                    Console.WriteLine("too much current!");
+                    Console.WriteLine("Power up fn_check_current fail!");
                     rtn = BIN.BIN_CODE[3];
                     goto POWER_UP_END;
                 }
-                if (config.c_check == 1 && mode == def.SECOND_POWER_UP)
+           
+                float[] cv = con.fn_get_cv();
+                if (cv != null)
                 {
-                    if (cv[1] < config.c_th_low)
+                    label_list[def.LABLE_VOLTAGE].Text = cv[0].ToString();
+                    label_list[def.LABLE_CURRENT].Text = cv[1].ToString();
+                    if (cv[1] < 1) //pin connect fail
                     {
-                        Console.WriteLine("Current below limited!");
+                        Console.WriteLine("Power up but no current!");
+                        rtn = BIN.BIN_CODE[6];
+                        goto POWER_UP_END;
+                    }
+                    if (cv[1] > 100)//<50
+                    {
+                        Console.WriteLine("too much current!");
                         rtn = BIN.BIN_CODE[3];
                         goto POWER_UP_END;
                     }
-                    if (cv[1] > config.c_th_high)//<30
+                    if (config.c_check == 1 && mode == def.SECOND_POWER_UP)
                     {
-                        Console.WriteLine("Current above limited!");
-                        rtn = BIN.BIN_CODE[3];
-                        goto POWER_UP_END;
+                        if (cv[1] < config.c_th_low)
+                        {
+                            Console.WriteLine("Current below limited!");
+                            rtn = BIN.BIN_CODE[3];
+                            goto POWER_UP_END;
+                        }
+                        if (cv[1] > config.c_th_high)
+                        {
+                            Console.WriteLine("Current above limited!");
+                            rtn = BIN.BIN_CODE[3];
+                            goto POWER_UP_END;
+                        }
                     }
                 }
+                
             }
-            label_list[def.LABLE_VOLTAGE].Text = cv[0].ToString();
-            label_list[def.LABLE_CURRENT].Text = cv[1].ToString();
-          
             rtn = def.RTN_OK;
             if (mode == def.FIRST_POWER_UP)
                 set_process(def.stage_power_up);
@@ -390,6 +395,7 @@ namespace Garage_USB
             Console.WriteLine("enter prime_calibrate");
             if (mode==1)
             {
+                Console.WriteLine("prime_calibrate mode = 1");
                 rtn = device.calibrate();
                 if (rtn != device.ERR_OK)
                 {
@@ -401,6 +407,7 @@ namespace Garage_USB
             
             byte[] list = new byte[64];
             int config_len = 0;
+            Console.WriteLine("prime get config");
             rtn = device.config(0, list, ref config_len);
             if (rtn != device.ERR_OK)
             {
@@ -410,7 +417,7 @@ namespace Garage_USB
             }
             string strconfig = device.bytesToHexString(list, 7);
             label_list[def.LABLE_PARAMETER].Text = strconfig;
-
+            Console.WriteLine("prime get bg");
             rtn = device.get_bg(bkg_img);
             if (rtn != device.ERR_OK)
             {
@@ -605,6 +612,7 @@ namespace Garage_USB
             btn_result.Text = "PASS";
             btn_result.BackColor = Color.Green;
             ssm_state = def.stage_result_ok;
+            btn_tip_blink.BackColor = Color.Green;
             Console.Beep(2766, 100);
             Thread.Sleep(50);
             Console.Beep(2766, 100);

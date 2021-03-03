@@ -131,6 +131,7 @@ namespace Garage_USB
                 thread_mp.IsBackground = true;
                 thread_mp.Start();
                 cb_mp.Checked = true;
+                btn_start.Text = "推-開始按鈕";
             }
         }
 
@@ -145,6 +146,7 @@ namespace Garage_USB
             g.tb_com = tb_com;
             g.pb_process = pb_process;
             g.img_preview = img_preview;
+            g.btn_tip_blink = btn_tip_blink;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -216,10 +218,12 @@ namespace Garage_USB
 
             while (cb_mp.Checked==true)
             {
+                this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
+                {
+                    btn_start.BackColor = Color.Purple;
+                }));
                 if (g.working == 1)
                     continue;
-
-                btn_start.BackColor = Color.Purple;
 
                 rtn = g.con.wait_start_key(-1);
                 if (rtn == def.RTN_FAIL)
@@ -234,7 +238,6 @@ namespace Garage_USB
 
                 Console.WriteLine("Start do prime!");
                 rtn = do_prime();
-                Console.WriteLine("Do prime return %d", rtn);
             }
             thread_mp = null;
         }
@@ -336,7 +339,8 @@ namespace Garage_USB
 
         public  int do_prime()
         {
-            int rtn = def.RTN_FAIL; ;
+            int rtn = def.RTN_FAIL;
+            //int download_calibrate = 0;
 
             init_prime_work();
 
@@ -381,29 +385,23 @@ namespace Garage_USB
             {
                 return rtn;
             }
-               
-
             rtn = prime_dispatch(def.FUNC_POWER_DOWN, 0);
             if (rtn != def.RTN_OK)
-            {
-                call_fail(g.BIN.BIN_CODE[15]);
-                return g.BIN.BIN_CODE[15];
-            }
-
-            Thread.Sleep(1000);
-
+                return rtn;
+            Thread.Sleep(3000);// powerup need time to calirate otherwise current will go high
+            //download_calibrate = 1;
             rtn = prime_dispatch(def.FUNC_POWER_UP, def.SECOND_POWER_UP);
             if (rtn != def.RTN_OK)
             {
-                call_fail(g.BIN.BIN_CODE[15]);
-                return g.BIN.BIN_CODE[15];
+                return rtn;
             }
 
-            g.prime_wait_device(2);
+            g.prime_wait_device(3);
 
         ACTIVE:
             if (config.test_only == 3)
             {
+                call_fail(g.BIN.BIN_CODE[2]);
                 return g.BIN.BIN_CODE[2];
             }
             rtn = prime_dispatch(def.FUNC_ACTIVE, 0);
@@ -426,14 +424,14 @@ namespace Garage_USB
 
             if (config.simple_test==0)
             {
-                if (cb_calibrate.Checked == true)
+
+                if (cb_calibrate.Checked == true)//&& download_calibrate == 0)
                     rtn = prime_dispatch(def.FUNC_CALIBRATE, 1);
                 else
                     rtn = prime_dispatch(def.FUNC_CALIBRATE, 0);
                 if (rtn != def.RTN_OK)
-                {
-                    return rtn;
-                }
+                        return rtn;
+
                 if (cb_ns.Checked)
                 {
                     rtn = prime_dispatch(def.FUNC_NOISE, 0);//SHOULD EMPTY IMAGE FOR BTL MODULE?
@@ -441,7 +439,6 @@ namespace Garage_USB
                         return rtn;
                 }
             }
-           
             set_process(def.stage_calibrate);
 
             Console.Beep(2766, 200);
@@ -599,26 +596,6 @@ namespace Garage_USB
             }));
         }
 
-        public void call_fail_sync(int code)
-        {
-                g.call_fail(code);
-                lb_err_message.Text = g.BIN.message(code);
-                g.con.switch_control((int)control.COMMAND.LED, (int)control.MODE.DOWN);
-                if (thread != null)
-                {
-                    g.ram_counter_bad++;
-                    lb_pf.Text = g.ram_counter_good.ToString() + "/" + g.ram_counter_bad.ToString();
-                }
-                btn_start.BackColor = Color.White;
-                btn_tip_blink.BackColor = Color.Red;
-                thread = null;
-                Thread.Sleep(1500);
-                g.working = 0;
-                ui_tr.Stop();
-                
-        }
-
-
         void log_info()
         {
             g.log_info();            
@@ -719,7 +696,7 @@ namespace Garage_USB
         {
             if(cb_mp.Checked == true)
             {
-                btn_start.Text = "Click Button to Start";
+                btn_start.Text = "點擊開始 Start";
                 btn_start.BackColor = Color.White;
             }  
             else

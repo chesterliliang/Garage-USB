@@ -457,6 +457,9 @@ namespace Garage_USB
             ui_tr.Start();
 
             g.button_down = 0;
+
+            int btn_pull_started = 0;
+            int btn_pull_stopped = 0;
             
             while (g.press_counter > 0)
             {
@@ -468,11 +471,23 @@ namespace Garage_USB
                 }
                 else
                     Thread.Sleep(25);
+
+                if(config.btn_check == 1&& btn_pull_started==0)
+                {
+                    g.con.stop_pull_button();
+                    g.con.check_button_short();
+                    btn_pull_started = 1;
+                }
                 if(config.btn_check == 1 && g.button_down == 0)
                 {
-                    rtn = prime_dispatch(def.FUNC_BUTTON, 2);//wait 2ms
+                    rtn = prime_dispatch(def.FUNC_BUTTON, 2);
                     if (rtn != def.RTN_OK)
                        return rtn;
+                }
+                else if(config.btn_check == 1 && g.button_down == 1 && btn_pull_stopped == 0)
+                {
+                    g.con.stop_pull_button();
+                    btn_pull_stopped = 1;
                 }
                 g.press_counter--;
             }// preview finish

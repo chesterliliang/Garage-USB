@@ -303,7 +303,7 @@ namespace Garage_USB
                 }
                 while (sp.BytesToRead == 0)
                 {
-                    Thread.Sleep(1);
+                    Thread.Sleep(20);
                 }
                 readBuffer = new byte[sp.ReadBufferSize + 1];
                 count = sp.Read(readBuffer, 0, sp.ReadBufferSize);
@@ -315,7 +315,7 @@ namespace Garage_USB
                 }
                 if(timeout_ms>0)
                     timeout_ms--;
-                Thread.Sleep(1);
+                Thread.Sleep(16);
 
                 if (should_leave == 1)
                 {
@@ -324,7 +324,7 @@ namespace Garage_USB
                 }
                    
             }
-            stop_pull_button();
+            //stop_pull_button();
 
             if (got == 1)
                 return def.RTN_OK;

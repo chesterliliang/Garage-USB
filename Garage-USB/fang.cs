@@ -523,8 +523,8 @@ namespace Garage_USB
         {
             int rtn = def.RTN_FAIL;
             Console.WriteLine("enter prime_check_button");
-            con.stop_pull_button();
-            con.check_button_short();
+            //con.stop_pull_button();
+            //con.check_button_short();
             rtn = con.wait_button(wait_time);
             if (rtn == def.RTN_OK)
                 button_down = 1;

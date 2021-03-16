@@ -990,7 +990,7 @@ namespace Garage_USB
             this.Controls.Add(this.groupBox4);
             this.Font = new System.Drawing.Font("Arial Narrow", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.Name = "Form1";
-            this.Text = " Garage-USB PixelAuth 1.0.0";
+            this.Text = " Garage-USB PixelAuth 1.0.2";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Enter += new System.EventHandler(this.btn_start_Click);
             this.groupBox1.ResumeLayout(false);

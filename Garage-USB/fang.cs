@@ -592,6 +592,12 @@ namespace Garage_USB
             {
                 Console.WriteLine("press failed avg=" + avg.ToString());
                 rtn = BIN.BIN_CODE[13];
+                goto SIGNAL_END;                                                                                                   
+            }
+            if (avg <200)
+            {
+                Console.WriteLine("press failed avg=" + avg.ToString());
+                rtn = BIN.BIN_CODE[16];
                 goto SIGNAL_END;
             }
             if (rv < config.rv_th)

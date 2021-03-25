@@ -467,7 +467,7 @@ namespace Garage_USB
                 {
                     rtn = prime_dispatch(def.FUNC_PREVIEW, gain);
                     if (rtn != def.RTN_OK)
-                        return rtn;
+                        goto LB_TR_END;
                 }
                 else
                     Thread.Sleep(25);
@@ -482,7 +482,7 @@ namespace Garage_USB
                 {
                     rtn = prime_dispatch(def.FUNC_BUTTON, 2);
                     if (rtn != def.RTN_OK)
-                       return rtn;
+                        goto LB_TR_END; ;
                 }
                 else if(config.btn_check == 1 && g.button_down == 1 && btn_pull_stopped == 0)
                 {
@@ -496,6 +496,7 @@ namespace Garage_USB
                 Console.WriteLine("button down check failed");
                 set_process(def.stage_press);
                 call_fail(g.BIN.BIN_CODE[17]);
+                ui_tr.Stop();
                 return g.BIN.BIN_CODE[17];
             }
             if(config.simple_test == 0)
@@ -503,10 +504,12 @@ namespace Garage_USB
             else
                 rtn = prime_dispatch(def.FUNC_FRAME, 1);
             if (rtn != def.RTN_OK)
-                return rtn;
-            
-  
+                goto LB_TR_END;
+
+            LB_TR_END:
             ui_tr.Stop();
+            if (rtn != def.RTN_OK)
+                return rtn;
 
             rtn = prime_dispatch(def.FUNC_SINGAL, gain);
             if (rtn != def.RTN_OK)

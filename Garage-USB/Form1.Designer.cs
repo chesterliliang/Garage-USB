@@ -46,6 +46,8 @@ namespace Garage_USB
             this.btn_com = new System.Windows.Forms.Button();
             this.tb_com = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.tb_working = new System.Windows.Forms.TextBox();
+            this.label14 = new System.Windows.Forms.Label();
             this.cb_ns = new System.Windows.Forms.CheckBox();
             this.cb_btn = new System.Windows.Forms.CheckBox();
             this.cb_cv = new System.Windows.Forms.CheckBox();
@@ -233,7 +235,7 @@ namespace Garage_USB
             // 
             this.img_preview.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.img_preview.Image = ((System.Drawing.Image)(resources.GetObject("img_preview.Image")));
-            this.img_preview.Location = new System.Drawing.Point(100, 100);
+            this.img_preview.Location = new System.Drawing.Point(45, 105);
             this.img_preview.Name = "img_preview";
             this.img_preview.Size = new System.Drawing.Size(288, 132);
             this.img_preview.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -258,7 +260,7 @@ namespace Garage_USB
             this.btn_result.Font = new System.Drawing.Font("微软雅黑", 21.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.btn_result.Location = new System.Drawing.Point(12, 278);
             this.btn_result.Name = "btn_result";
-            this.btn_result.Size = new System.Drawing.Size(453, 56);
+            this.btn_result.Size = new System.Drawing.Size(596, 56);
             this.btn_result.TabIndex = 18;
             this.btn_result.Text = "等待開始";
             this.btn_result.UseVisualStyleBackColor = false;
@@ -292,6 +294,8 @@ namespace Garage_USB
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.tb_working);
+            this.groupBox3.Controls.Add(this.label14);
             this.groupBox3.Controls.Add(this.cb_ns);
             this.groupBox3.Controls.Add(this.cb_btn);
             this.groupBox3.Controls.Add(this.cb_cv);
@@ -315,6 +319,24 @@ namespace Garage_USB
             this.groupBox3.TabIndex = 19;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "setting";
+            // 
+            // tb_working
+            // 
+            this.tb_working.Location = new System.Drawing.Point(877, 33);
+            this.tb_working.Name = "tb_working";
+            this.tb_working.Size = new System.Drawing.Size(52, 21);
+            this.tb_working.TabIndex = 56;
+            this.tb_working.Text = "COM21";
+            // 
+            // label14
+            // 
+            this.label14.AutoSize = true;
+            this.label14.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label14.Location = new System.Drawing.Point(822, 34);
+            this.label14.Name = "label14";
+            this.label14.Size = new System.Drawing.Size(45, 18);
+            this.label14.TabIndex = 55;
+            this.label14.Text = "COM";
             // 
             // cb_ns
             // 
@@ -580,10 +602,10 @@ namespace Garage_USB
             // lb_product
             // 
             this.lb_product.AutoSize = true;
-            this.lb_product.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lb_product.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.lb_product.Location = new System.Drawing.Point(90, 49);
             this.lb_product.Name = "lb_product";
-            this.lb_product.Size = new System.Drawing.Size(13, 18);
+            this.lb_product.Size = new System.Drawing.Size(11, 15);
             this.lb_product.TabIndex = 17;
             this.lb_product.Text = "-";
             // 
@@ -691,7 +713,7 @@ namespace Garage_USB
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Location = new System.Drawing.Point(12, 101);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(456, 171);
+            this.groupBox2.Size = new System.Drawing.Size(596, 171);
             this.groupBox2.TabIndex = 16;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Test Info";
@@ -740,7 +762,7 @@ namespace Garage_USB
             // 
             this.label11.AutoSize = true;
             this.label11.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label11.Location = new System.Drawing.Point(350, 355);
+            this.label11.Location = new System.Drawing.Point(495, 355);
             this.label11.Name = "label11";
             this.label11.Size = new System.Drawing.Size(68, 36);
             this.label11.TabIndex = 26;
@@ -750,7 +772,7 @@ namespace Garage_USB
             // 
             this.lb_bin.AutoSize = true;
             this.lb_bin.Font = new System.Drawing.Font("Arial", 24F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_bin.Location = new System.Drawing.Point(424, 355);
+            this.lb_bin.Location = new System.Drawing.Point(575, 355);
             this.lb_bin.Name = "lb_bin";
             this.lb_bin.Size = new System.Drawing.Size(33, 36);
             this.lb_bin.TabIndex = 28;
@@ -762,7 +784,7 @@ namespace Garage_USB
             this.btn_tip_blink.Enabled = false;
             this.btn_tip_blink.FlatAppearance.BorderSize = 0;
             this.btn_tip_blink.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btn_tip_blink.Location = new System.Drawing.Point(74, 14);
+            this.btn_tip_blink.Location = new System.Drawing.Point(19, 19);
             this.btn_tip_blink.Name = "btn_tip_blink";
             this.btn_tip_blink.Size = new System.Drawing.Size(341, 335);
             this.btn_tip_blink.TabIndex = 32;
@@ -849,9 +871,9 @@ namespace Garage_USB
             this.groupBox4.Controls.Add(this.button1);
             this.groupBox4.Controls.Add(this.button2);
             this.groupBox4.Controls.Add(this.btn_tip_blink);
-            this.groupBox4.Location = new System.Drawing.Point(506, 99);
+            this.groupBox4.Location = new System.Drawing.Point(614, 99);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(478, 394);
+            this.groupBox4.Size = new System.Drawing.Size(382, 394);
             this.groupBox4.TabIndex = 51;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Image";
@@ -862,7 +884,7 @@ namespace Garage_USB
             this.button1.Enabled = false;
             this.button1.FlatAppearance.BorderSize = 0;
             this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button1.Location = new System.Drawing.Point(90, 88);
+            this.button1.Location = new System.Drawing.Point(35, 93);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(309, 156);
             this.button1.TabIndex = 50;
@@ -874,7 +896,7 @@ namespace Garage_USB
             this.button2.Enabled = false;
             this.button2.FlatAppearance.BorderSize = 0;
             this.button2.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.button2.Location = new System.Drawing.Point(85, 22);
+            this.button2.Location = new System.Drawing.Point(30, 27);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(320, 320);
             this.button2.TabIndex = 34;
@@ -1007,8 +1029,6 @@ namespace Garage_USB
         }
 
         #endregion
-
-        private System.Windows.Forms.Button btn_start;
         private System.Windows.Forms.Button btn_tip_powerup;
         private System.Windows.Forms.Button btn_tip_download;
         private System.Windows.Forms.Button btn_tip_restart;
@@ -1038,7 +1058,6 @@ namespace Garage_USB
         private System.Windows.Forms.Label label13;
         private System.Windows.Forms.Label lb_station;
         private System.Windows.Forms.Label label15;
-        private System.Windows.Forms.Label lb_pf;
         private System.Windows.Forms.Button btn_poweroff;
         private System.Windows.Forms.Button btn_poweron;
         private System.Windows.Forms.CheckBox cb_calibrate;
@@ -1083,6 +1102,10 @@ namespace Garage_USB
         private System.Windows.Forms.Label lb_station_type;
         private System.Windows.Forms.Label label17;
         public System.Windows.Forms.Button btn_tip_blink;
+        public System.Windows.Forms.Label lb_pf;
+        public System.Windows.Forms.Button btn_start;
+        private System.Windows.Forms.TextBox tb_working;
+        private System.Windows.Forms.Label label14;
     }
 }
 

@@ -21,6 +21,8 @@ namespace Garage_USB
         public static int stage_result_fail = 0;
         public static int RTN_OK = 0;
         public static int RTN_FAIL = -1;
+        public static int RTN_ON =2;
+        public static int RTN_TIMEOUT = 3;
 
         public static string firmware_file = "_pxat_fm.bin";
 
@@ -39,6 +41,12 @@ namespace Garage_USB
 
         public static int FIRST_POWER_UP = 1;
         public static int SECOND_POWER_UP = 2;
+
+        public static int ENKIDU_POWER_UP_MCU = 3;
+        public static int ENKIDU_POWER_UP_SENSOR = 4;
+
+        public static int ENKIDU_POWER_OFF_MCU = 1;
+        public static int ENKIDU_POWER_OFF_SENSOR = 2;
 
         public static int LABLE_PROJECT = 0;
         public static int LABLE_PRODUCT = 1;

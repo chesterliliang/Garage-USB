@@ -20,14 +20,20 @@ namespace Garage_USB
             POWER = 1,
             S0 = 2,
             USB = 3,
-            LED = 4
+            LED = 4,
+            POWER_MCU = 5,
         }
 
         public byte channel = 0;
         //a5000901010000aaaa
-        public byte[] power_up = { 0xa5, 0x00, 0x09, 0, 0x01, 0x00, 0x00, 0xAA, 0xAA };//1
+        public byte[] power_up = { 0xa5, 0x00, 0x09, 0, 0x01, 0x00, 0x00, 0xAA, 0xAA };//1 well ...
         //a5000901020000aaaa
-        public byte[] power_down = { 0xa5, 0x00, 0x09, 0, 0x02, 0x00, 0x00, 0xAA, 0xAA };//2
+        public byte[] power_down = { 0xa5, 0x00, 0x09, 0, 0x02, 0x00, 0x00, 0xAA, 0xAA };//2 in 1st board, channel is set
+
+        public byte[] power_up_mcu = { 0xa5, 0x00, 0x09, 0x2, 0x01, 0x00, 0x00, 0xAA, 0xAA };//1 // 2nd board 1 means m1, 2 means m2
+        //a5000901020000aaaa
+        public byte[] power_down_mcu = { 0xa5, 0x00, 0x09, 0x2, 0x02, 0x00, 0x00, 0xAA, 0xAA };//2 .. be careful
+
         //返回数据：A50009012F00188DD7 其中：0x012F=303 为电压值3.03*100 0x0018=24mA电流值 
         //a50009010a0000aaaa
         public byte[] get_cv = { 0xa5, 0x00, 0x09, 0, 0x0a, 0x00, 0x00, 0xAA, 0xAA };//3
@@ -57,6 +63,13 @@ namespace Garage_USB
         public byte[] led_high = { 0xa5, 0x00, 0x09, 0, 0x0b, 0x00, 0x01, 0xAA, 0xAA };//14
         //a5000901080002aaaa
         public byte[] led_low = { 0xa5, 0x00, 0x09, 0, 0x0b, 0x00, 0x02, 0xAA, 0xAA };//15
+
+        public byte[] touch_start = { 0xa5, 0x00, 0x09, 1, 0x0c, 0x00, 0x01, 0xAA, 0xAA };
+
+        public byte[] touch_pull = { 0xa5, 0x00, 0x09, 1, 0x0c, 0x00, 0x02, 0xAA, 0xAA };
+
+        public byte[] touch_stop= { 0xa5, 0x00, 0x09, 1, 0x0c, 0x00, 0x03, 0xAA, 0xAA };
+
         public control()
         {
             set_channel();
@@ -104,6 +117,8 @@ namespace Garage_USB
             sp.StopBits = System.IO.Ports.StopBits.One;
             sp.Parity = System.IO.Ports.Parity.None;
             sp.ReadBufferSize = 128;
+            sp.DtrEnable = true;
+            sp.RtsEnable = true;
 
 
             try
@@ -151,16 +166,23 @@ namespace Garage_USB
                     else if (mode == (int)MODE.DOWN)
                         sp.Write(led_low, 0, 9);
                 }
+                else if(command == (int)COMMAND.POWER_MCU)
+                {
+                    if (mode == (int)MODE.UP)
+                        sp.Write(power_up_mcu, 0, 9);
+                    else if (mode == (int)MODE.DOWN)
+                        sp.Write(power_down_mcu, 0, 9);
+                }
             }
             catch (Exception err)
             {
-                Console.WriteLine("fn_power_up write fail " + err.Message);
+                Console.WriteLine("fn_power_up write fail switch_control" + err.Message +" " + command.ToString());
                 return def.RTN_FAIL;
             }
 
             while (sp.BytesToRead == 0)
             {
-                Thread.Sleep(1);
+                Thread.Sleep(16);
             }
 
             byte[] readBuffer = new byte[sp.ReadBufferSize + 1];
@@ -396,5 +418,77 @@ namespace Garage_USB
 
             return def.RTN_FAIL;
         }
+        public int wait_touch_out(int timeout_ms)
+        {
+            int rtn = def.RTN_FAIL;
+            try
+            {
+                sp.Write(touch_start, 0, 9);
+            }
+            catch (Exception err)
+            {
+                Console.WriteLine("wait_touch_out write fail " + err.Message);
+                return def.RTN_FAIL;
+            }
+            while (sp.BytesToRead == 0)
+                Thread.Sleep(16);
+
+            byte[] readBuffer = new byte[sp.ReadBufferSize + 1];
+            int count = sp.Read(readBuffer, 0, sp.ReadBufferSize);
+            int status = (int)readBuffer[4];
+            if (status == 1)
+            {
+                return def.RTN_ON;
+            }
+            do
+            {
+                try
+                {
+                    sp.Write(touch_pull, 0, 9);
+                }
+                catch (Exception err)
+                {
+                    Console.WriteLine("wait_touch_out write fail " + err.Message);
+                    return def.RTN_FAIL;
+                }
+                while (sp.BytesToRead == 0)
+                    Thread.Sleep(16);
+
+                readBuffer = new byte[sp.ReadBufferSize + 1];
+                count = sp.Read(readBuffer, 0, sp.ReadBufferSize);
+                status = (int)readBuffer[4];
+                if (status == 1)
+                {
+                    rtn = def.RTN_OK;
+                    break;
+                }
+                timeout_ms--;
+                if(timeout_ms==0)
+                {
+                    rtn = def.RTN_FAIL;
+                    break;
+                }
+                Thread.Sleep(16);
+
+            } while (true);
+
+            try
+            {
+                sp.Write(touch_stop, 0, 9);
+            }
+            catch (Exception err)
+            {
+                Console.WriteLine("wait_touch_out write fail " + err.Message);
+                return def.RTN_FAIL;
+            }
+            while (sp.BytesToRead == 0)
+                Thread.Sleep(16);
+
+            readBuffer = new byte[sp.ReadBufferSize + 1];
+            count = sp.Read(readBuffer, 0, sp.ReadBufferSize);
+            return rtn;
+
+        }
+
     }
 }

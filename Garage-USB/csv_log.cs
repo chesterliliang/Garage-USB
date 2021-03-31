@@ -39,7 +39,7 @@ namespace Garage_USB
         }
         public static void gen_table(string path, DataTable dt)
         {
-            dt.Columns.Add("ID", System.Type.GetType("System.Int32"));
+            /*dt.Columns.Add("ID", System.Type.GetType("System.Int32"));
             dt.Columns.Add("Result", System.Type.GetType("System.String"));
             dt.Columns.Add("Bin", System.Type.GetType("System.Int32"));
             dt.Columns.Add("Stage", System.Type.GetType("System.Int32"));
@@ -50,6 +50,24 @@ namespace Garage_USB
             dt.Columns.Add("Voltage", typeof(float));
             dt.Columns.Add("Download", System.Type.GetType("System.Int32"));
             dt.Columns.Add("Activate", System.Type.GetType("System.Int32"));
+            dt.Columns.Add("SN", System.Type.GetType("System.String"));
+            dt.Columns.Add("Version", System.Type.GetType("System.String"));
+            dt.Columns.Add("Parameter", System.Type.GetType("System.String"));
+            dt.Columns.Add("Station", System.Type.GetType("System.String"));
+            dt.Columns.Add("Date", System.Type.GetType("System.DateTime"));
+            dt.Columns.Add("Project", System.Type.GetType("System.String"));
+            dt.Columns.Add("Product", System.Type.GetType("System.String"));*/
+            dt.Columns.Add("ID", System.Type.GetType("System.String"));
+            dt.Columns.Add("Result", System.Type.GetType("System.String"));
+            dt.Columns.Add("Bin", System.Type.GetType("System.String"));
+            dt.Columns.Add("Stage", System.Type.GetType("System.String"));
+            dt.Columns.Add("Gray Level", System.Type.GetType("System.String"));
+            dt.Columns.Add("RV", System.Type.GetType("System.String"));
+            dt.Columns.Add("Noise", typeof(float));
+            dt.Columns.Add("Current", System.Type.GetType("System.String"));
+            dt.Columns.Add("Voltage", typeof(float));
+            dt.Columns.Add("Download", System.Type.GetType("System.String"));
+            dt.Columns.Add("Activate", System.Type.GetType("System.String"));
             dt.Columns.Add("SN", System.Type.GetType("System.String"));
             dt.Columns.Add("Version", System.Type.GetType("System.String"));
             dt.Columns.Add("Parameter", System.Type.GetType("System.String"));

@@ -42,6 +42,8 @@ namespace Garage_USB
         public Button btn_tip_blink;
         public control con;
         public TextBox tb_com;
+        public TextBox tb_working;
+
         public ProgressBar pb_process;
         public PictureBox img_preview;
         public int await = 0;
@@ -50,6 +52,7 @@ namespace Garage_USB
         public int download_opt_done = 0;
 
         public err BIN;
+        public com c;
 
         public void control_init()
         {
@@ -68,6 +71,22 @@ namespace Garage_USB
                     tb_com.BackColor = Color.Red;
             }
 
+        }
+
+        public void working_com_init()
+        {
+            c = new com();
+            if(config.comm_type==1)
+            {
+                if(c.open_port(config.working_port)==def.RTN_OK)
+                {
+                    tb_working.BackColor = Color.Green;
+                }
+                else
+                {
+                    tb_working.BackColor = Color.Red; 
+                }
+            }
         }
 
         public fang(string app_path)
@@ -117,44 +136,45 @@ namespace Garage_USB
             int max_id = 0;
             for (int i = 0; i < dt_count; i++)
             {
-                if (max_id < Convert.ToInt32(dt.Rows[i]["ID"]))
-                    max_id = Convert.ToInt32(dt.Rows[i]["ID"]);
+                if (max_id < Convert.ToInt32(dt.Rows[i]["ID"].ToString()))
+                    max_id = Convert.ToInt32(dt.Rows[i]["ID"].ToString());
             }
             DataRow dr = dt.NewRow();
-            dr["ID"] = max_id + 1;
+            dr["ID"] = (max_id + 1).ToString();
             dr["Project"] = label_list[def.LABLE_PROJECT].Text;
             dr["Product"] = label_list[def.LABLE_PRODUCT].Text;
             dr["Station"] = label_list[def.LABLE_STATION].Text;
             dr["Date"] = DateTime.Now.ToString("F");
             dr["Current"] = Convert.ToInt32(label_list[def.LABLE_CURRENT].Text);
             //dr["Voltage"] = Convert.ToFloat(lb_voltage.Text);
-            float v = 0;
-            if (float.TryParse(label_list[def.LABLE_VOLTAGE].Text, out v))
-                dr["Voltage"] = v;
-            else
-                dr["Voltage"] = 0.0;
+            /* float v = 0;
+             if (float.TryParse(label_list[def.LABLE_VOLTAGE].Text, out v))
+                 dr["Voltage"] = v;
+             else
+                 dr["Voltage"] = 0.0;*/
+            dr["Voltage"] = label_list[def.LABLE_CURRENT].Text;
 
             if (ssm_state >= def.stage_download)
-                dr["Download"] = 1;
+                dr["Download"] = "1";
             else
-                dr["Download"] = 0;
+                dr["Download"] = "0";
 
 
-            dr["Activate"] = 1;
+            dr["Activate"] = "1";
 
             dr["SN"] = label_list[def.LABLE_SN].Text;
             dr["Version"] = label_list[def.LABLE_VERSION].Text;
             dr["Parameter"] = label_list[def.LABLE_PARAMETER].Text;
-            dr["Gray Level"] = Convert.ToInt32(label_list[def.LABLE_GRAYLEVEL].Text);
-            dr["RV"] = Convert.ToInt32(label_list[def.LABLE_RV].Text);
-            dr["noise"] = float.Parse(label_list[def.LABLE_NOISE].Text);
-            dr["Stage"] = ssm_state;
+            dr["Gray Level"] = label_list[def.LABLE_GRAYLEVEL].Text;
+            dr["RV"] = label_list[def.LABLE_RV].Text;
+            dr["noise"] = label_list[def.LABLE_NOISE].Text;
+            dr["Stage"] = ssm_state.ToString();
             if (ssm_state == def.stage_result_ok)
                 dr["Result"] = "PASS";//good
             else
                 dr["Result"] = "FAIL";//not finished
 
-            dr["BIN"] = Convert.ToInt32(label_list[def.LABLE_BIN].Text);
+            dr["BIN"] = label_list[def.LABLE_BIN].Text;
             dt.Rows.Add(dr);
             csv_log.dt2csv(log_fs, dt);
             log_fs.Close();
@@ -192,6 +212,7 @@ namespace Garage_USB
             int rtn = 0;
             event_device_changed = 0;
             Console.WriteLine("Power up!");
+
             con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP);
             Thread.Sleep(50);
             if(config.c_check == 1)
@@ -594,12 +615,12 @@ namespace Garage_USB
                 rtn = BIN.BIN_CODE[13];
                 goto SIGNAL_END;                                                                                                   
             }
-            if (avg <200)
+            /*if (avg <200)
             {
                 Console.WriteLine("press failed avg=" + avg.ToString());
                 rtn = BIN.BIN_CODE[16];
                 goto SIGNAL_END;
-            }
+            }*/
             if (rv < config.rv_th)
             {;
                 Console.WriteLine("press failed rv=" + rv.ToString());
@@ -626,10 +647,13 @@ namespace Garage_USB
             if (config.single_module == 0)
             {
                 con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
+                if(config.keycode=="2887"|| config.keycode == "2888")
+                    con.switch_control((int)control.COMMAND.POWER_MCU, (int)control.MODE.DOWN);
             }
             ram_counter_good++;
             //Thread.Sleep(1500);
-            device.disconnect();   
+            if(config.comm_type==0)
+                device.disconnect();   
             working = 0;
             await = 0;
             return def.RTN_OK;

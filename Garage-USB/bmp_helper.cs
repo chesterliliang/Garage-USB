@@ -27,8 +27,8 @@ namespace Garage_USB
             {
                 img_preview.Width = config.sensor_width * 2;
                 img_preview.Height = config.sensor_height * 2;
-                img_preview.Left = 85;
-                img_preview.Top = 22;
+                img_preview.Left = 30;
+                img_preview.Top = 27;
             }
             else if (config.sensor_width == 144)
             {
@@ -42,8 +42,19 @@ namespace Garage_USB
             {
                 img_preview.Width = config.sensor_width * 3;
                 img_preview.Height = config.sensor_height * 3;
-                img_preview.Left = 90;
-                img_preview.Top = 88;
+                img_preview.Left = 85;
+                img_preview.Top = 22;
+            }
+            else if (config.sensor_width == 192)
+            {
+                double rw = 160.0 / 192;
+                double rh = 160.0 / 192;
+                double fw = config.sensor_width * 2 * rw;
+                double fh = config.sensor_width * 2 * rh;
+                img_preview.Width = (int)fw;
+                img_preview.Height = (int)fh;
+                img_preview.Left = 30;
+                img_preview.Top = 27;
             }
         }
 

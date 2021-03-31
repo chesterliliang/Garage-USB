@@ -11,17 +11,20 @@ namespace Garage_USB
 {
     public partial class Form1 : Form
     {
-        System.Timers.Timer ui_tr = new System.Timers.Timer();   
-        ThreadStart threadStart = null;
-        ThreadStart threadLive = null;
-        ThreadStart threadMP = null;
-        Thread thread = null;
-        Thread thread_live = null;
-        Thread thread_mp = null;
-        Label[] label_list = new Label[def.lable_count];
-        fang g;
-        
-       void Thread_Init()
+        public System.Timers.Timer ui_tr = new System.Timers.Timer();
+        public ThreadStart threadStart = null;
+        public ThreadStart threadLive = null;
+        public ThreadStart threadMP = null;
+        public Thread thread = null;
+        public Thread thread_live = null;
+        public Thread thread_mp = null;
+        public Label[] label_list = new Label[def.lable_count];
+        public fang g;
+        Enkidu ek;
+
+
+
+        void Thread_Init()
         {
             threadStart = new ThreadStart(th_prime);
             threadLive = new ThreadStart(do_preview);
@@ -34,7 +37,7 @@ namespace Garage_USB
             ui_tr.Interval = 200;
         }
         void Data_Init()
-        {  
+        {
             g = new fang(Application.StartupPath);
             g.BIN = new err();
             int i = config.init_projects(g);
@@ -49,13 +52,13 @@ namespace Garage_USB
             Thread_Init();
             Init_Timer();
             csv_log.open_create_log(g);
- 
+
         }
         void project_ui_init(int index)
         {
             int dft = 0;
             lb_project.Text = config.project_name;
-            lb_product.Text = config.comm_type.ToString()+"-"+config.firmware_type.ToString()+"-"+config.dev_type.ToString();
+            lb_product.Text = config.comm_type.ToString() + "-" + config.firmware_type.ToString() + "-" + config.dev_type.ToString();
             cmb_project.Items.Clear();
             cmb_project.Items.Add("Select Project");
             for (int i = 0; i < g.dt_configs.Rows.Count; i++)
@@ -64,10 +67,10 @@ namespace Garage_USB
                 if (Convert.ToInt32(g.dt_configs.Rows[i]["Default"]) == 1)
                     dft = i;
             }
-            if(index!=-1)
+            if (index != -1)
                 cmb_project.SelectedIndex = index;
             else
-                cmb_project.SelectedIndex = dft+1;
+                cmb_project.SelectedIndex = dft + 1;
 
             if (config.locked == 1)
             {
@@ -75,7 +78,7 @@ namespace Garage_USB
                 btn_reload.Visible = false;
                 cmb_channel.Visible = false;
             }
-                
+
 
         }
         void station_ui_init()
@@ -85,9 +88,10 @@ namespace Garage_USB
             btn_tip_blink.BackColor = Color.White;
             set_process(def.stage_start);
             tb_com.Text = config.comport;
+            tb_working.Text = config.working_port;
             btn_start.BackColor = Color.White;
             lb_err_message.Text = "";
-            if(config.test_only==3)
+            if (config.test_only == 3)
                 lb_station_type.Text = "CHECK";
             else
                 lb_station_type.Text = "MP";
@@ -97,18 +101,18 @@ namespace Garage_USB
         private void btn_reload_Click(object sender, EventArgs e)
         {
             int i = config.init_projects(g);
-            if(cmb_project.SelectedIndex!=0)
+            if (cmb_project.SelectedIndex != 0)
             {
-                config.load_config(g,cmb_project.SelectedIndex - 1);
+                config.load_config(g, cmb_project.SelectedIndex - 1);
                 project_ui_init(cmb_project.SelectedIndex);
-            } 
+            }
             else
             {
-                config.load_config(g,i);
+                config.load_config(g, i);
                 project_ui_init(i);
-            }    
+            }
             config.init_station(g);
-            
+
             station_ui_init();
             image_view_init();
             g.ram_counter_bad = 0;
@@ -137,13 +141,14 @@ namespace Garage_USB
 
         void init_ui_list()
         {
-            
+
             label_list[def.LABLE_PROJECT] = lb_project; label_list[def.LABLE_PRODUCT] = lb_product; label_list[def.LABLE_SN] = lb_sn; label_list[def.LABLE_VOLTAGE] = lb_voltage;
             label_list[def.LABLE_CURRENT] = lb_current; label_list[def.LABLE_PARAMETER] = lb_parameter; label_list[def.LABLE_VERSION] = lb_version; label_list[def.LABLE_RV] = lb_rv;
             label_list[def.LABLE_GRAYLEVEL] = lb_graylevel; label_list[def.LABLE_NOISE] = lb_noise; label_list[def.LABLE_BIN] = lb_bin; label_list[def.LABLE_STATION] = lb_station;
             g.init_ui_list(label_list);
             g.btn_result = btn_result;
             g.tb_com = tb_com;
+            g.tb_working = tb_working;
             g.pb_process = pb_process;
             g.img_preview = img_preview;
             g.btn_tip_blink = btn_tip_blink;
@@ -162,16 +167,21 @@ namespace Garage_USB
 
             image_view_init();
             mp_handling();
+            g.working_com_init();
+            ek = new Enkidu(this);
+
         }
-        private void init_lbs()
+        public void init_lbs()
         {
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
                 g.clear_ui_list();
+                lb_project.Text = config.project_name;
+                lb_product.Text = config.product_code;
                 lb_err_message.Text = "";
             }));
         }
-        private void init_tips()
+        public void init_tips()
         {
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
@@ -179,18 +189,18 @@ namespace Garage_USB
                 btn_tip_blink.BackColor = Color.White;
                 btn_result.Text = "作業中--勿碰模組";
             }));
-           
+
         }
-       private void btn_start_Click(object sender, EventArgs e)
-        {       
-            if(cb_mp.Checked==false)
+        private void btn_start_Click(object sender, EventArgs e)
+        {
+            if (cb_mp.Checked == false)
             {
                 btn_start.BackColor = Color.Blue;
                 if (thread != null)
                 {
                     Console.WriteLine("Thread exists!");
                     return;
-                }     
+                }
                 thread = new Thread(threadStart);
                 thread.IsBackground = true;
                 thread.Start();
@@ -206,7 +216,7 @@ namespace Garage_USB
                 thread_mp = new Thread(threadMP);
                 thread_mp.IsBackground = true;
                 thread_mp.Start();
-            }    
+            }
         }
         public void do_mp()
         {
@@ -216,7 +226,7 @@ namespace Garage_USB
             g.con.switch_control((int)control.COMMAND.USB, (int)control.MODE.UP);
             g.con.switch_control((int)control.COMMAND.S0, (int)control.MODE.UP);
 
-            while (cb_mp.Checked==true)
+            while (cb_mp.Checked == true)
             {
                 this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
                 {
@@ -337,10 +347,17 @@ namespace Garage_USB
             do_prime();
         }
 
-        public  int do_prime()
+        public int do_prime()
         {
             int rtn = def.RTN_FAIL;
             //int download_calibrate = 0;
+
+            if (config.keycode == "2887"|| config.keycode == "2888")
+            {
+                ek.work();
+                thread = null;
+                return def.RTN_OK;
+            }
 
             init_prime_work();
 

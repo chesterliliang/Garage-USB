@@ -2,7 +2,9 @@
 using System.Threading;
 using System.IO.Ports;
 using System.Linq;
-
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Runtime.InteropServices;
 
 namespace Garage_USB
 {
@@ -70,6 +72,8 @@ namespace Garage_USB
 
         public byte[] touch_stop= { 0xa5, 0x00, 0x09, 1, 0x0c, 0x00, 0x03, 0xAA, 0xAA };
 
+        public byte[] get_version = { 0xa5, 0x00, 0x09, 1, 0xfd, 0x00, 0x00, 0xAA, 0xAA };
+
         public control()
         {
             set_channel();
@@ -95,6 +99,16 @@ namespace Garage_USB
             led_low[3] = channel;
         }
 
+        public int close_port()
+        {
+            if (sp != null)
+            {
+                sp.Close();
+                return def.RTN_OK;
+            }
+            return def.RTN_FAIL;
+        }
+
 
         public int open_port(string com_number)
         {
@@ -111,7 +125,7 @@ namespace Garage_USB
                 }
             }
             sp = null;    
-            sp = new SerialPort(config.comport);
+            sp = new SerialPort(com_number);
             sp.BaudRate = 115200;
             sp.DataBits = 8;
             sp.StopBits = System.IO.Ports.StopBits.One;
@@ -194,6 +208,32 @@ namespace Garage_USB
             else
                 return def.RTN_FAIL;
         }
+        public int get_vr()
+        {
+            try
+            {
+                sp.Write(get_version, 0, 9);
+            }
+            catch (Exception err)
+            {
+                Console.WriteLine("get_version write fail " + err.Message);
+                return def.RTN_FAIL;
+            }
+            int counter = 10;
+            while (sp.BytesToRead == 0)
+            {
+                Thread.Sleep(16);
+                counter--;
+                if (counter == 0)
+                    return def.RTN_TIMEOUT;
+            }
+
+            Thread.Sleep(100);
+            byte[] readBuffer = new byte[sp.ReadBufferSize + 1];
+            int count = sp.Read(readBuffer, 0, sp.ReadBufferSize);
+            return def.RTN_OK;
+        }
+
 
         public float[] fn_get_cv()
         {
@@ -489,6 +529,91 @@ namespace Garage_USB
             return rtn;
 
         }
+
+        // <summary>
+        /// 通过vid，pid获得串口设备号
+        /// </summary>
+        /// <param name="vid">vid</param>
+        /// <param name="pid">pid</param>
+        /// <returns>串口号</returns>
+        public string GetPortNameFormVidPid(string vid, string pid)
+        {
+            //{4d36e978-e325-11ce-bfc1-08002be10318}
+
+            Guid GUID_DEVINTERFACE_DFU = new Guid(0x4d36e978, 0xe325, 0x11ce, 0xbf, 0xc1, 0x08, 0x00, 0x2b, 0xe1, 0x03, 0x18);
+
+            Guid classGuid = Guid.Empty;
+
+            Guid myGUID = Guid.Empty;
+            string enumerator = "USB";
+
+            IntPtr hDevInfo = Win32.SetupDiGetClassDevs(ref classGuid, IntPtr.Zero, IntPtr.Zero, Win32.DIGCF_DEVICEINTERFACE | Win32.DIGCF_PRESENT);
+            //if (hDevInfo.ToInt32() == Win32.INVALID_HANDLE_VALUE)
+            if(false)
+            {
+                Console.WriteLine("read hardware information error");
+            }
+            else
+            {
+                SP_DEVINFO_DATA devInfoData = new SP_DEVINFO_DATA();
+                devInfoData.cbSize = 32;
+                devInfoData.classGuid = Guid.Empty;
+                devInfoData.devInst = 0;
+                devInfoData.reserved = IntPtr.Zero;
+                bool result = Win32.SetupDiEnumDeviceInfo(hDevInfo, 0, devInfoData);
+                if (false == result)
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    //if (error != Win32.ERROR_NO_MORE_ITEMS)
+                      //  throw new Win32Exception(error);
+                }
+
+                SP_DEVICE_INTERFACE_DATA ifData = new SP_DEVICE_INTERFACE_DATA();
+                ifData.cbSize = (uint)Marshal.SizeOf(ifData);
+                ifData.Flags = 0;
+                ifData.InterfaceClassGuid = Guid.Empty;
+                ifData.Reserved = IntPtr.Zero;
+
+                bool result2 = Win32.SetupDiEnumDeviceInterfaces(hDevInfo, IntPtr.Zero, ref classGuid, 0, ifData);
+                if (result2 == false)
+                {
+                    int error = Marshal.GetLastWin32Error();
+                   // if (error != Win32.ERROR_NO_MORE_ITEMS)
+                       // throw new Win32Exception(error);
+                }
+
+                uint needed;
+
+                // This returns: needed=160, result3=false and error=122 ("The data area passed to a system call is too small")
+                bool result3 = Win32.SetupDiGetDeviceInterfaceDetail(hDevInfo, ifData, null, 0, out needed, null);
+                if (result3 == false)
+                {
+                    int error = Marshal.GetLastWin32Error();
+                }
+
+               // IntPtr detailDataBuffer = IntPtr.Zero;
+                SP_DEVICE_INTERFACE_DETAIL_DATA ifDetailsData = new SP_DEVICE_INTERFACE_DETAIL_DATA();
+                ifDetailsData.devicePath = new byte[needed - 4];
+                ifDetailsData.cbSize = (uint)Marshal.SizeOf(ifDetailsData);
+
+                IntPtr detailDataBuffer = Marshal.AllocHGlobal((int)needed);
+                Marshal.WriteInt32(detailDataBuffer, (IntPtr.Size == 4) ? (4 + Marshal.SystemDefaultCharSize) : 8);
+                uint nBytes = needed;
+
+                bool result4 = Win32.SetupDiGetDeviceInterfaceDetail(hDevInfo, ifData, ifDetailsData, nBytes, out needed, null);
+                if (result4 == false)
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    //if (error != Win32.ERROR_NO_MORE_ITEMS)
+                    //    throw new Win32Exception(error);
+                }
+
+                IntPtr pDevicePathName = new IntPtr(detailDataBuffer.ToInt32() + 4);
+                String devicePathName = Marshal.PtrToStringAuto(pDevicePathName);
+            }
+            return null;
+        }
+
 
     }
 }

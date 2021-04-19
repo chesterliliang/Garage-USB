@@ -193,6 +193,28 @@ namespace Garage_USB
         [DllImport("./bin/product.dll", EntryPoint = "PAPRO_GetBgImage", CallingConvention = CallingConvention.Cdecl)]
         public static extern unsafe int PAPRO_GetBgImage(byte[] bgimg);
 
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_GetLicenseCounter", CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe int PAPRO_GetLicenseCounter(ref int count);
+        public static int get_license_count(ref int count)
+        {
+            int rtn = ERR_FAIL;
+            Console.WriteLine("enter get_license_count!");
+            rtn = PAPRO_GetLicenseCounter(ref count);
+            Console.WriteLine("leave get_license_count! rv = 0x" + String.Format("{0:X000}", rtn));
+            return rtn;
+        }
+
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_GetActivateData", CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe int PAPRO_GetActivateData(byte[] rand, int rand_len, byte[] code, ref int code_len);
+        public static int get_activate_data(byte[] rand, int rand_len, byte[] code, ref int code_len)
+        {
+            int rtn = ERR_FAIL;
+            Console.WriteLine("enter get_activate_data!");
+            rtn = PAPRO_GetActivateData(rand, rand_len,code,ref code_len);
+            Console.WriteLine("leave get_activate_data! rv = 0x" + String.Format("{0:X000}", rtn));
+            return rtn;
+        }
+
         public static int get_bg(byte[] bgimg)
         {
             int rtn = ERR_FAIL;

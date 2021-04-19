@@ -9,6 +9,7 @@ namespace Garage_USB
     public class com
     {
         public SerialPort sp;
+        
 
         public com()
         {
@@ -55,7 +56,7 @@ namespace Garage_USB
         public int send_cmd(byte[] cmd, int len, ref byte[] res, ref int res_len, int lap)
         {
             byte[] readBuffer = new byte[sp.ReadBufferSize + 1];
-            int time_out = 1024 * 64;
+            int time_out = 1024*64;
             try
             {
                 sp.Write(cmd, 0, len);
@@ -69,10 +70,11 @@ namespace Garage_USB
             {
                 time_out--;
                 if (time_out == 0)
-                    return def.RTN_FAIL;
+                    return def.RTN_TIMEOUT;
             }
             Thread.Sleep(lap);
             res_len = sp.Read(res, 0, sp.ReadBufferSize);
+
 
             return def.RTN_OK;
         }

@@ -54,6 +54,31 @@ namespace Garage_USB
         public err BIN;
         public com c;
 
+        public int control_init(string com_name)
+        {
+            con = new control();
+
+            if (con.open_port(com_name) == def.RTN_OK)
+            {
+                //tb_com.BackColor = Color.Green;
+                int rtn = con.get_vr();
+                if (rtn == def.RTN_OK)
+                {
+                    con.close_port();
+                    config.comport = com_name;
+                    return def.RTN_OK;
+                }
+                else
+                {
+                    con.close_port();
+                    return def.RTN_FAIL;
+                }
+                    
+            }
+            return def.RTN_FAIL;
+
+
+        }
         public void control_init()
         {
             con = new control();
@@ -62,9 +87,9 @@ namespace Garage_USB
                 if (con.open_port(config.comport) == def.RTN_OK)
                 {
                     tb_com.BackColor = Color.Green;
-                    con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
-                    con.switch_control((int)control.COMMAND.USB, (int)control.MODE.UP);
-                    con.switch_control((int)control.COMMAND.S0, (int)control.MODE.UP);
+                    //con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
+                    //con.switch_control((int)control.COMMAND.USB, (int)control.MODE.UP);
+                    //con.switch_control((int)control.COMMAND.S0, (int)control.MODE.UP);
                 }
 
                 else
@@ -203,8 +228,8 @@ namespace Garage_USB
                 {
                     log_info();
                 }
-                if (config.single_module != 1)
-                    con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
+                //if (config.single_module != 1)
+                //    con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
                 Console.WriteLine("call fail! " + code.ToString() + " stage=" + ssm_state);
         }
         public int prime_power_up(int mode)

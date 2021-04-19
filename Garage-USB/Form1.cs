@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
+using System.IO.Ports;
 
 namespace Garage_USB
 {
@@ -21,7 +22,8 @@ namespace Garage_USB
         public Label[] label_list = new Label[def.lable_count];
         public fang g;
         Enkidu ek;
-
+        public System.Timers.Timer count_tr = new System.Timers.Timer();
+        public int done_counter = 0;
 
 
         void Thread_Init()
@@ -35,6 +37,9 @@ namespace Garage_USB
             ui_tr.AutoReset = true;
             ui_tr.Elapsed += new ElapsedEventHandler(ui_tr_event);
             ui_tr.Interval = 200;
+            count_tr.AutoReset = true;
+            count_tr.Elapsed += new ElapsedEventHandler(count_tr_event);
+            count_tr.Interval = 1000;
         }
         void Data_Init()
         {
@@ -154,20 +159,63 @@ namespace Garage_USB
             g.btn_tip_blink = btn_tip_blink;
         }
 
+        private int auto_com()
+        {
+            string[] port_list = new string[20];
+            int i = 0;
+            //list all coms
+            foreach (string vPortName in SerialPort.GetPortNames())
+            {
+                port_list[i] = vPortName;
+                i++;
+            }
+
+            //if more then 2, then go to manuel
+            if (i != 2)
+            {
+                call_fail(g.BIN.BIN_CODE[29]);
+                return def.RTN_FAIL;
+            }
+               
+            //TODO: find with is our com
+
+            //open and send get v
+            int rtn = def.RTN_FAIL;
+            rtn = g.control_init(port_list[0]);
+            if(rtn!=def.RTN_OK)
+            {
+                rtn = g.control_init(port_list[1]);//if fails try another
+                if (rtn != def.RTN_OK)
+                    return def.RTN_TIMEOUT;
+                else
+                {
+                    config.working_port = port_list[0];
+                    return def.RTN_OK;
+                }  
+
+            }
+            //once ok, confirm working com
+            config.working_port = port_list[1];
+            return def.RTN_OK;
+            
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             init_ui_list();
+            
+            int rtn = auto_com();
+            if (rtn == def.RTN_FAIL)
+                return;
             g.control_init();
+            g.working_com_init();
+
             project_ui_init(-1);
             station_ui_init();
-            //for debug
-            cmb_channel.Items.Add("1");
-            cmb_channel.Items.Add("2");
-            cmb_channel.Items.Add("3");
 
             image_view_init();
             mp_handling();
-            g.working_com_init();
+            
             ek = new Enkidu(this);
 
         }
@@ -222,9 +270,9 @@ namespace Garage_USB
         {
             int rtn = 0;
             g.con.should_leave = 0;
-            g.con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
-            g.con.switch_control((int)control.COMMAND.USB, (int)control.MODE.UP);
-            g.con.switch_control((int)control.COMMAND.S0, (int)control.MODE.UP);
+            //g.con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
+            //g.con.switch_control((int)control.COMMAND.USB, (int)control.MODE.UP);
+            //g.con.switch_control((int)control.COMMAND.S0, (int)control.MODE.UP);
 
             while (cb_mp.Checked == true)
             {
@@ -569,7 +617,7 @@ namespace Garage_USB
         {
             this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
-                if (g.ssm_state == def.stage_calibrate)
+                if (g.ssm_state == def.stage_press)
                 {
                     if (btn_tip_blink.BackColor == Color.White)
                     {
@@ -585,6 +633,20 @@ namespace Garage_USB
                 }
             }));
         }
+
+        private void count_tr_event(object source, System.Timers.ElapsedEventArgs e)
+        {
+            this.BeginInvoke(new System.Threading.ThreadStart(delegate ()
+            {
+                done_counter += 1;
+                lb_counter.Text = done_counter.ToString() + "秒";
+                if(done_counter>5)
+                {
+                    lb_counter.ForeColor = Color.Red;
+                }
+            }));
+        }
+    
 
         protected override void WndProc(ref Message m)
         {
@@ -617,7 +679,7 @@ namespace Garage_USB
             {
                 g.call_fail(code);
                 lb_err_message.Text = g.BIN.message(code);
-                g.con.switch_control((int)control.COMMAND.LED, (int)control.MODE.DOWN);
+                //g.con.switch_control((int)control.COMMAND.LED, (int)control.MODE.DOWN);
                 if (thread != null)
                 {
                     g.ram_counter_bad++;
@@ -671,11 +733,13 @@ namespace Garage_USB
         private void btn_poweron_Click(object sender, EventArgs e)
         {
             g.con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.UP);
+            g.con.switch_control((int)control.COMMAND.POWER_MCU, (int)control.MODE.UP);
         }
 
         private void btn_poweroff_Click(object sender, EventArgs e)
         {
             g.con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
+            g.con.switch_control((int)control.COMMAND.POWER_MCU, (int)control.MODE.DOWN);
         }
 
        

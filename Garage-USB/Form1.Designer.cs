@@ -107,6 +107,10 @@ namespace Garage_USB
             this.lb_err_message = new System.Windows.Forms.Label();
             this.lb_station_type = new System.Windows.Forms.Label();
             this.label17 = new System.Windows.Forms.Label();
+            this.label19 = new System.Windows.Forms.Label();
+            this.lb_counter = new System.Windows.Forms.Label();
+            this.lb_act_count = new System.Windows.Forms.Label();
+            this.label21 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.img_preview)).BeginInit();
             this.groupBox3.SuspendLayout();
@@ -691,6 +695,8 @@ namespace Garage_USB
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.lb_act_count);
+            this.groupBox2.Controls.Add(this.label21);
             this.groupBox2.Controls.Add(this.lb_noise);
             this.groupBox2.Controls.Add(this.label8);
             this.groupBox2.Controls.Add(this.lb_version);
@@ -981,12 +987,54 @@ namespace Garage_USB
             this.label17.TabIndex = 58;
             this.label17.Text = "TYPE";
             // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label19.Location = new System.Drawing.Point(450, 430);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(158, 31);
+            this.label19.TabIndex = 60;
+            this.label19.Text = "距离上次完成";
+            // 
+            // lb_counter
+            // 
+            this.lb_counter.AutoSize = true;
+            this.lb_counter.Font = new System.Drawing.Font("微软雅黑", 18F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lb_counter.Location = new System.Drawing.Point(501, 465);
+            this.lb_counter.Name = "lb_counter";
+            this.lb_counter.Size = new System.Drawing.Size(52, 31);
+            this.lb_counter.TabIndex = 61;
+            this.lb_counter.Text = "0秒";
+            // 
+            // lb_act_count
+            // 
+            this.lb_act_count.AutoSize = true;
+            this.lb_act_count.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lb_act_count.Location = new System.Drawing.Point(547, 98);
+            this.lb_act_count.Name = "lb_act_count";
+            this.lb_act_count.Size = new System.Drawing.Size(22, 18);
+            this.lb_act_count.TabIndex = 31;
+            this.lb_act_count.Text = "-1";
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label21.Location = new System.Drawing.Point(467, 96);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(74, 21);
+            this.label21.TabIndex = 30;
+            this.label21.Text = "激活次数";
+            // 
             // Form1
             // 
             this.AcceptButton = this.btn_start;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1008, 661);
+            this.Controls.Add(this.lb_counter);
+            this.Controls.Add(this.label19);
             this.Controls.Add(this.lb_station_type);
             this.Controls.Add(this.label17);
             this.Controls.Add(this.lb_err_message);
@@ -1012,7 +1060,7 @@ namespace Garage_USB
             this.Controls.Add(this.groupBox4);
             this.Font = new System.Drawing.Font("Arial Narrow", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.Name = "Form1";
-            this.Text = " Garage-USB PixelAuth 1.0.2";
+            this.Text = " Garage-USB PixelAuth 1.0.3";
             this.Load += new System.EventHandler(this.Form1_Load);
             this.Enter += new System.EventHandler(this.btn_start_Click);
             this.groupBox1.ResumeLayout(false);
@@ -1106,6 +1154,10 @@ namespace Garage_USB
         public System.Windows.Forms.Button btn_start;
         private System.Windows.Forms.TextBox tb_working;
         private System.Windows.Forms.Label label14;
+        private System.Windows.Forms.Label label19;
+        public System.Windows.Forms.Label lb_counter;
+        public System.Windows.Forms.Label lb_act_count;
+        private System.Windows.Forms.Label label21;
     }
 }
 

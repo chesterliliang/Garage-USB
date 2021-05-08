@@ -2,6 +2,7 @@
 using System.Threading;
 using System.IO.Ports;
 using System.Linq;
+using System.Text;
 
 
 namespace Garage_USB
@@ -53,10 +54,35 @@ namespace Garage_USB
             return def.RTN_OK;
         }
 
+        public int read_buffer()
+        {
+            byte[] data = new byte[1024 * 1024 + 1];
+            int time_out = 100;
+            while (sp.BytesToRead == 0)
+            {
+                time_out--;
+                Thread.Sleep(16);
+                if (time_out == 0)
+                    return def.RTN_TIMEOUT;
+            }
+            int res_len = sp.Read(data, 0, sp.ReadBufferSize);
+           
+            StringBuilder ret = new StringBuilder();
+            for (int i = 0; i < res_len; i++)
+            {
+                //{0:X2} 大写
+                ret.AppendFormat("{0:x2}", data[i]);
+            }
+            var hex = ret.ToString();
+            Console.WriteLine(hex);
+
+            return def.RTN_OK;
+        }
+
         public int send_cmd(byte[] cmd, int len, ref byte[] res, ref int res_len, int lap)
         {
             byte[] readBuffer = new byte[sp.ReadBufferSize + 1];
-            int time_out = 1024*64;
+            int time_out = 1024*256;
             try
             {
                 sp.Write(cmd, 0, len);

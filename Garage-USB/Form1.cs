@@ -43,7 +43,7 @@ namespace Garage_USB
         }
         void Data_Init()
         {
-            g = new fang(Application.StartupPath);
+            g = new fang(Application.StartupPath,this);
             g.BIN = new err();
             int i = config.init_projects(g);
             config.load_config(g, i);
@@ -400,7 +400,7 @@ namespace Garage_USB
             int rtn = def.RTN_FAIL;
             //int download_calibrate = 0;
 
-            if (config.keycode == "2887"|| config.keycode == "2888")
+            if (config.keycode == "2887"|| config.keycode == "2888"|| config.keycode == "2889")
             {
                 ek.work();
                 thread = null;
@@ -745,12 +745,14 @@ namespace Garage_USB
        
         private void btn_usb1_Click(object sender, EventArgs e)
         {
-            g.con.switch_control((int)control.COMMAND.USB, (int)control.MODE.UP);
+            //g.con.switch_control((int)control.COMMAND.USB, (int)control.MODE.UP);
+            g.con.switch_control((int)control.COMMAND.POWER_MCU, (int)control.MODE.UP);
         }
 
         private void btn_usb0_Click(object sender, EventArgs e)
         {
-            g.con.switch_control((int)control.COMMAND.USB, (int)control.MODE.DOWN);
+            //g.con.switch_control((int)control.COMMAND.USB, (int)control.MODE.DOWN);
+            g.con.switch_control((int)control.COMMAND.POWER_MCU, (int)control.MODE.DOWN);
         }
 
         private void btn_s0_1_Click(object sender, EventArgs e)
@@ -788,7 +790,8 @@ namespace Garage_USB
 
         private void btn_get_cv_Click(object sender, EventArgs e)
         {
-             get_all_info(0);
+            //get_all_info(0);
+            ek.enkidu_kill();
         }
 
         private void cb_mp_CheckedChanged(object sender, EventArgs e)

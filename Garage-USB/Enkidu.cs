@@ -19,22 +19,39 @@ namespace Garage_USB
             s = new std();
         }
 
+        public void log_apdu(byte[] data, int len)
+        {
+ 
+            StringBuilder ret = new StringBuilder();
+            for(int i=0; i<len;i++)
+            {
+                //{0:X2} 大写
+                ret.AppendFormat("{0:x2}", data[i]);
+            }
+            var hex = ret.ToString();
+            Console.WriteLine(hex);
+        }
+
         private int handle_cmd(byte[] apdu, int len, ref byte[] data, ref int data_len, int first)
         {
             byte[] cmd = s.get_cmd(1, len, apdu);
             byte[] res = new byte[1024 * 1024]; int res_len = 0;
             int rtn = def.RTN_FAIL;
-            if(first!=2)
+            if(first==0)
+                log_apdu(cmd, cmd.Length);
+            if (first!=2)
                 rtn = ui_form.g.c.send_cmd(cmd, cmd.Length, ref res, ref res_len, std_delay);
             else
                 rtn = ui_form.g.c.send_cmd(cmd, cmd.Length, ref res, ref res_len, std_delay*300);
 
             if (rtn != def.RTN_OK)
             {
-                //call_fail(ui_form.g.BIN.BIN_CODE[22]);
+                Console.WriteLine("send_cmd error"+rtn.ToString());
                 return rtn;
             }
-            if(first!=2)
+            if (first==0)
+                log_apdu(res, res_len);
+            if (first!=2)
                 rtn = s.get_result(res, res_len, ref data, ref data_len);
             else
             {
@@ -42,7 +59,8 @@ namespace Garage_USB
                 data_len = res_len;
                 return def.RTN_OK;
             }
-
+            if (first == 0)
+                Console.WriteLine("get_result rtn="+ rtn.ToString());
             return rtn;
         }
 
@@ -54,7 +72,7 @@ namespace Garage_USB
         {
             byte[] apdu = { 0xfb };
             byte[] data = new byte[1024 * 1024]; int data_len = 0;
-            int rtn = handle_cmd(apdu, apdu.Length, ref data, ref data_len, 1);
+            int rtn = handle_cmd(apdu, apdu.Length, ref data, ref data_len, 0);
             if (rtn != def.RTN_OK)
             {
                 call_fail(ui_form.g.BIN.BIN_CODE[7]);
@@ -85,7 +103,7 @@ namespace Garage_USB
             int rtn = handle_cmd(apdu, apdu.Length, ref data, ref data_len, 0);
             if (rtn != def.RTN_OK)
             {
-                //call_fail(ui_form.g.BIN.BIN_CODE[4]);
+                Console.WriteLine("detect transfer error");
                 return rtn;
             }
             ui_form.BeginInvoke(new ThreadStart(delegate ()
@@ -93,6 +111,46 @@ namespace Garage_USB
                 //ui_form.lb_sn.Text = Encoding.UTF8.GetString(data.Take(data_len).ToArray());
                 ui_form.lb_noise.Text = "1";
             }));
+            return def.RTN_OK;
+        }
+        public int enkidu_kill()
+        {
+            if(ui_form.tb_admin.Text!="57625900")
+            {
+                call_fail(ui_form.g.BIN.BIN_CODE[34]);
+                return def.RTN_FAIL;
+            }
+            reset_power();
+            int rtn = ui_form.g.c.read_buffer();
+            byte[] apdu = { 0x1A,0x01 };
+            byte[] data = new byte[1024 * 1024]; int data_len = 0;
+            rtn = handle_cmd(apdu, apdu.Length, ref data, ref data_len, 0);
+            if (rtn != def.RTN_OK)
+            {
+                Console.WriteLine("kill transfer error");
+                call_fail(ui_form.g.BIN.BIN_CODE[34]);
+                return rtn;
+            }
+            rtn = ui_form.g.con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
+            if (rtn != def.RTN_OK)
+            {
+                call_fail(ui_form.g.BIN.BIN_CODE[15]);
+                return def.RTN_FAIL;
+            }
+            ui_form.g.con.switch_control((int)control.COMMAND.POWER_MCU, (int)control.MODE.DOWN);
+            if (rtn != def.RTN_OK)
+            {
+                call_fail(ui_form.g.BIN.BIN_CODE[15]);
+                return def.RTN_FAIL;
+            }
+            ui_form.BeginInvoke(new ThreadStart(delegate ()
+            {
+                ui_form.lb_err_message.Text = "Cleared!";
+                ui_form.tb_admin.Text = "";
+                ui_form.tb_admin.Focus();
+            }));
+           
+
             return def.RTN_OK;
         }
 
@@ -138,7 +196,7 @@ namespace Garage_USB
             int rtn = handle_cmd(apdu, apdu.Length, ref data, ref data_len, 0);
             if (rtn != def.RTN_OK)
             {
-                call_fail(ui_form.g.BIN.BIN_CODE[26]);
+                call_fail(ui_form.g.BIN.BIN_CODE[26]);//TODO: always here
                 return rtn;
             }
             return def.RTN_OK;
@@ -232,7 +290,7 @@ namespace Garage_USB
                     return def.RTN_TIMEOUT;
                 }
                 Thread.Sleep(16);
-                rtn = handle_cmd(apdu_get, apdu_get.Length, ref get_res, ref get_len, 0);
+                rtn = handle_cmd(apdu_get, apdu_get.Length, ref get_res, ref get_len, 1);
                 if (rtn == 0x02)
                     continue;
                 else if (rtn == 0)
@@ -336,21 +394,32 @@ namespace Garage_USB
         {
             int rtn = def.RTN_FAIL;
             init_prime_work();
+
             rtn = reset_power();
             if (rtn != def.RTN_OK)
             {
                 return def.RTN_FAIL;
             }
             set_process(def.stage_power_up);
+
+            rtn = ui_form.g.c.read_buffer();
+            Console.WriteLine("read buffer result " + rtn.ToString());
+
             //goto TEST;
             //check if there is bootloader device
             rtn = enkidu_cancel();
+            Console.WriteLine("detect result "+ rtn.ToString());
             if (rtn== def.RTN_OK)
                 goto TEST;
             else if (rtn == def.RTN_TIMEOUT)
                 goto DOWNLOAD;
-            else
+            else if(rtn==1)
                 goto ACTIVE;
+            else
+            {
+                call_fail(ui_form.g.BIN.BIN_CODE[31]);
+                return def.RTN_FAIL;
+            }    
 
             
            
@@ -369,8 +438,16 @@ namespace Garage_USB
 
 
         ACTIVE:
+
             set_process(def.stage_restart);
-            rtn = enkidu_cancel();//to avoid 55 at power up
+            rtn = ui_form.g.c.read_buffer();
+            if (rtn != def.RTN_OK)
+            {
+                Console.WriteLine("read buffer result " + rtn.ToString());
+                call_fail(ui_form.g.BIN.BIN_CODE[1]);
+                return def.RTN_FAIL;
+
+            }
             int act_counter = 0;
             rtn = device.get_license_count(ref act_counter);
             if (rtn != def.RTN_OK)
@@ -450,11 +527,32 @@ namespace Garage_USB
             ui_form.ui_tr.Start();
            
             Console.WriteLine("Press finger!");
+            float[] cv = ui_form.g.con.fn_get_cv(1,1);
+            ui_form.BeginInvoke(new ThreadStart(delegate ()
+            {
+                ui_form.lb_current.Text = Convert.ToInt32(cv[0]).ToString();
+            }));
+            if(cv[1]> config.c_th_low)
+            {
+                call_fail(ui_form.g.BIN.BIN_CODE[32]);
+                return rtn;
+            }
+
 
             rtn = ui_form.g.con.wait_touch_out(500);
-            if (rtn != def.RTN_OK)
+            if (rtn == def.RTN_ON)//high at first
             {
                 call_fail(ui_form.g.BIN.BIN_CODE[18]);
+                return rtn;
+            }
+            else if (rtn == def.RTN_TIMEOUT)//no response
+            {
+                call_fail(ui_form.g.BIN.BIN_CODE[19]);
+                return rtn;
+            }
+            else if(rtn== def.RTN_FAIL)
+            {
+                call_fail(ui_form.g.BIN.BIN_CODE[15]);
                 return rtn;
             }
             Console.WriteLine("Finger detect!");
@@ -471,6 +569,16 @@ namespace Garage_USB
             if (rtn == def.RTN_FAIL)
             {
                 call_fail(ui_form.g.BIN.BIN_CODE[19]);
+                return rtn;
+            }
+            float[] cv2 = ui_form.g.con.fn_get_cv(3,0);
+            ui_form.BeginInvoke(new ThreadStart(delegate ()
+            {
+                ui_form.lb_voltage.Text = Convert.ToInt32(cv2[1]).ToString();
+            }));
+            if (cv2[1] > config.c_th_high)
+            {
+                call_fail(ui_form.g.BIN.BIN_CODE[32]);
                 return rtn;
             }
 

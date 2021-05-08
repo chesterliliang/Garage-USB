@@ -14,6 +14,7 @@ namespace Garage_USB
     {
         public byte[] bkg_img = null;
         public byte[] avg_frame = null;
+        Form1 ui_form;
 
         public DataTable dt_configs;
         public DataTable dt_station;
@@ -56,16 +57,22 @@ namespace Garage_USB
 
         public int control_init(string com_name)
         {
+            int version = 0;
             con = new control();
 
             if (con.open_port(com_name) == def.RTN_OK)
             {
                 //tb_com.BackColor = Color.Green;
-                int rtn = con.get_vr();
+                int rtn = con.get_vr(ref version);
                 if (rtn == def.RTN_OK)
                 {
                     con.close_port();
                     config.comport = com_name;
+                    ui_form.BeginInvoke(new ThreadStart(delegate ()
+                    {
+                        ui_form.lb_vr.Text = version.ToString();
+                    }));
+
                     return def.RTN_OK;
                 }
                 else
@@ -114,8 +121,9 @@ namespace Garage_USB
             }
         }
 
-        public fang(string app_path)
+        public fang(string app_path, Form ui)
         {
+            ui_form = (Form1)ui;
             ref_path = app_path; 
             csv_log.path = app_path + @"img\";
             Console.WriteLine("img storage path = " + csv_log.path);
@@ -250,7 +258,7 @@ namespace Garage_USB
                     goto POWER_UP_END;
                 }
            
-                float[] cv = con.fn_get_cv();
+                float[] cv = con.fn_get_cv(1,0);
                 if (cv != null)
                 {
                     label_list[def.LABLE_VOLTAGE].Text = cv[0].ToString();

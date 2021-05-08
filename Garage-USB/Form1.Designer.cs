@@ -46,6 +46,7 @@ namespace Garage_USB
             this.btn_com = new System.Windows.Forms.Button();
             this.tb_com = new System.Windows.Forms.TextBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.tb_admin = new System.Windows.Forms.TextBox();
             this.tb_working = new System.Windows.Forms.TextBox();
             this.label14 = new System.Windows.Forms.Label();
             this.cb_ns = new System.Windows.Forms.CheckBox();
@@ -82,6 +83,8 @@ namespace Garage_USB
             this.label10 = new System.Windows.Forms.Label();
             this.lb_voltage = new System.Windows.Forms.Label();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.lb_act_count = new System.Windows.Forms.Label();
+            this.label21 = new System.Windows.Forms.Label();
             this.lb_noise = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
             this.lb_version = new System.Windows.Forms.Label();
@@ -101,7 +104,7 @@ namespace Garage_USB
             this.button2 = new System.Windows.Forms.Button();
             this.cmb_project = new System.Windows.Forms.ComboBox();
             this.label16 = new System.Windows.Forms.Label();
-            this.label18 = new System.Windows.Forms.Label();
+            this.lb_vr = new System.Windows.Forms.Label();
             this.btn_reload = new System.Windows.Forms.Button();
             this.cmb_channel = new System.Windows.Forms.ComboBox();
             this.lb_err_message = new System.Windows.Forms.Label();
@@ -109,8 +112,6 @@ namespace Garage_USB
             this.label17 = new System.Windows.Forms.Label();
             this.label19 = new System.Windows.Forms.Label();
             this.lb_counter = new System.Windows.Forms.Label();
-            this.lb_act_count = new System.Windows.Forms.Label();
-            this.label21 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.img_preview)).BeginInit();
             this.groupBox3.SuspendLayout();
@@ -298,6 +299,7 @@ namespace Garage_USB
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.tb_admin);
             this.groupBox3.Controls.Add(this.tb_working);
             this.groupBox3.Controls.Add(this.label14);
             this.groupBox3.Controls.Add(this.cb_ns);
@@ -324,9 +326,17 @@ namespace Garage_USB
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "setting";
             // 
+            // tb_admin
+            // 
+            this.tb_admin.Location = new System.Drawing.Point(807, 45);
+            this.tb_admin.Name = "tb_admin";
+            this.tb_admin.PasswordChar = '*';
+            this.tb_admin.Size = new System.Drawing.Size(108, 21);
+            this.tb_admin.TabIndex = 57;
+            // 
             // tb_working
             // 
-            this.tb_working.Location = new System.Drawing.Point(877, 33);
+            this.tb_working.Location = new System.Drawing.Point(863, 19);
             this.tb_working.Name = "tb_working";
             this.tb_working.Size = new System.Drawing.Size(52, 21);
             this.tb_working.TabIndex = 56;
@@ -336,7 +346,7 @@ namespace Garage_USB
             // 
             this.label14.AutoSize = true;
             this.label14.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label14.Location = new System.Drawing.Point(822, 34);
+            this.label14.Location = new System.Drawing.Point(807, 20);
             this.label14.Name = "label14";
             this.label14.Size = new System.Drawing.Size(45, 18);
             this.label14.TabIndex = 55;
@@ -393,13 +403,14 @@ namespace Garage_USB
             // 
             // btn_get_cv
             // 
+            this.btn_get_cv.BackColor = System.Drawing.SystemColors.Control;
             this.btn_get_cv.Font = new System.Drawing.Font("Arial", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.btn_get_cv.Location = new System.Drawing.Point(628, 20);
             this.btn_get_cv.Name = "btn_get_cv";
             this.btn_get_cv.Size = new System.Drawing.Size(75, 52);
             this.btn_get_cv.TabIndex = 49;
-            this.btn_get_cv.Text = "get_CV";
-            this.btn_get_cv.UseVisualStyleBackColor = true;
+            this.btn_get_cv.Text = "Clear";
+            this.btn_get_cv.UseVisualStyleBackColor = false;
             this.btn_get_cv.Click += new System.EventHandler(this.btn_get_cv_Click);
             // 
             // btn_led_0
@@ -659,15 +670,15 @@ namespace Garage_USB
             this.label9.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.label9.Location = new System.Drawing.Point(321, 119);
             this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(59, 18);
+            this.label9.Size = new System.Drawing.Size(52, 18);
             this.label9.TabIndex = 22;
-            this.label9.Text = "Current";
+            this.label9.Text = "C1 uA";
             // 
             // lb_current
             // 
             this.lb_current.AutoSize = true;
             this.lb_current.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_current.Location = new System.Drawing.Point(384, 119);
+            this.lb_current.Location = new System.Drawing.Point(398, 119);
             this.lb_current.Name = "lb_current";
             this.lb_current.Size = new System.Drawing.Size(22, 18);
             this.lb_current.TabIndex = 23;
@@ -679,15 +690,15 @@ namespace Garage_USB
             this.label10.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.label10.Location = new System.Drawing.Point(321, 142);
             this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(61, 18);
+            this.label10.Size = new System.Drawing.Size(57, 18);
             this.label10.TabIndex = 24;
-            this.label10.Text = "Voltage";
+            this.label10.Text = "C2 mA";
             // 
             // lb_voltage
             // 
             this.lb_voltage.AutoSize = true;
             this.lb_voltage.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_voltage.Location = new System.Drawing.Point(384, 142);
+            this.lb_voltage.Location = new System.Drawing.Point(398, 142);
             this.lb_voltage.Name = "lb_voltage";
             this.lb_voltage.Size = new System.Drawing.Size(22, 18);
             this.lb_voltage.TabIndex = 25;
@@ -723,6 +734,26 @@ namespace Garage_USB
             this.groupBox2.TabIndex = 16;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Test Info";
+            // 
+            // lb_act_count
+            // 
+            this.lb_act_count.AutoSize = true;
+            this.lb_act_count.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lb_act_count.Location = new System.Drawing.Point(547, 98);
+            this.lb_act_count.Name = "lb_act_count";
+            this.lb_act_count.Size = new System.Drawing.Size(22, 18);
+            this.lb_act_count.TabIndex = 31;
+            this.lb_act_count.Text = "-1";
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.label21.Location = new System.Drawing.Point(467, 96);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(74, 21);
+            this.label21.TabIndex = 30;
+            this.label21.Text = "激活次数";
             // 
             // lb_noise
             // 
@@ -927,15 +958,15 @@ namespace Garage_USB
             this.label16.TabIndex = 53;
             this.label16.Text = "GN Version";
             // 
-            // label18
+            // lb_vr
             // 
-            this.label18.AutoSize = true;
-            this.label18.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label18.Location = new System.Drawing.Point(703, 29);
-            this.label18.Name = "label18";
-            this.label18.Size = new System.Drawing.Size(13, 18);
-            this.label18.TabIndex = 54;
-            this.label18.Text = "-";
+            this.lb_vr.AutoSize = true;
+            this.lb_vr.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.lb_vr.Location = new System.Drawing.Point(703, 29);
+            this.lb_vr.Name = "lb_vr";
+            this.lb_vr.Size = new System.Drawing.Size(13, 18);
+            this.lb_vr.TabIndex = 54;
+            this.lb_vr.Text = "-";
             // 
             // btn_reload
             // 
@@ -1007,26 +1038,6 @@ namespace Garage_USB
             this.lb_counter.TabIndex = 61;
             this.lb_counter.Text = "0秒";
             // 
-            // lb_act_count
-            // 
-            this.lb_act_count.AutoSize = true;
-            this.lb_act_count.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.lb_act_count.Location = new System.Drawing.Point(547, 98);
-            this.lb_act_count.Name = "lb_act_count";
-            this.lb_act_count.Size = new System.Drawing.Size(22, 18);
-            this.lb_act_count.TabIndex = 31;
-            this.lb_act_count.Text = "-1";
-            // 
-            // label21
-            // 
-            this.label21.AutoSize = true;
-            this.label21.Font = new System.Drawing.Font("微软雅黑", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.label21.Location = new System.Drawing.Point(467, 96);
-            this.label21.Name = "label21";
-            this.label21.Size = new System.Drawing.Size(74, 21);
-            this.label21.TabIndex = 30;
-            this.label21.Text = "激活次数";
-            // 
             // Form1
             // 
             this.AcceptButton = this.btn_start;
@@ -1040,7 +1051,7 @@ namespace Garage_USB
             this.Controls.Add(this.lb_err_message);
             this.Controls.Add(this.cmb_channel);
             this.Controls.Add(this.btn_reload);
-            this.Controls.Add(this.label18);
+            this.Controls.Add(this.lb_vr);
             this.Controls.Add(this.label16);
             this.Controls.Add(this.cmb_project);
             this.Controls.Add(this.btn_clear);
@@ -1096,7 +1107,6 @@ namespace Garage_USB
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label9;
-        private System.Windows.Forms.Label lb_current;
         private System.Windows.Forms.Label label10;
         private System.Windows.Forms.GroupBox groupBox2;
         private System.Windows.Forms.Label label11;
@@ -1126,7 +1136,6 @@ namespace Garage_USB
         private System.Windows.Forms.Button button2;
         private System.Windows.Forms.ComboBox cmb_project;
         private System.Windows.Forms.Label label16;
-        private System.Windows.Forms.Label label18;
         private System.Windows.Forms.CheckBox cb_ns;
         private System.Windows.Forms.CheckBox cb_btn;
         private System.Windows.Forms.CheckBox cb_cv;
@@ -1158,6 +1167,9 @@ namespace Garage_USB
         public System.Windows.Forms.Label lb_counter;
         public System.Windows.Forms.Label lb_act_count;
         private System.Windows.Forms.Label label21;
+        public System.Windows.Forms.Label lb_vr;
+        public System.Windows.Forms.Label lb_current;
+        public System.Windows.Forms.TextBox tb_admin;
     }
 }
 

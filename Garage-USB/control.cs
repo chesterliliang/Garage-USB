@@ -196,7 +196,7 @@ namespace Garage_USB
 
             while (sp.BytesToRead == 0)
             {
-                Thread.Sleep(16);
+                Thread.Sleep(16);//TODO timeout
             }
 
             byte[] readBuffer = new byte[sp.ReadBufferSize + 1];
@@ -208,7 +208,7 @@ namespace Garage_USB
             else
                 return def.RTN_FAIL;
         }
-        public int get_vr()
+        public int get_vr(ref int version)
         {
             try
             {
@@ -231,13 +231,19 @@ namespace Garage_USB
             Thread.Sleep(100);
             byte[] readBuffer = new byte[sp.ReadBufferSize + 1];
             int count = sp.Read(readBuffer, 0, sp.ReadBufferSize);
+            version = readBuffer[6];
             return def.RTN_OK;
         }
 
 
-        public float[] fn_get_cv()
+        public float[] fn_get_cv(int ch, int mode)
         {
             float[] array = new float[2];
+            get_cv[3] = (byte)ch;
+            if(mode==1)//uA
+            {
+                get_cv[6] = 1;
+            }
             try
             {
                 sp.Write(get_cv, 0, 9);
@@ -505,7 +511,7 @@ namespace Garage_USB
                 timeout_ms--;
                 if(timeout_ms==0)
                 {
-                    rtn = def.RTN_FAIL;
+                    rtn = def.RTN_TIMEOUT;
                     break;
                 }
                 Thread.Sleep(16);

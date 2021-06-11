@@ -68,6 +68,103 @@ namespace Garage_USB
         {
             return device.download_firmware(ui_form.g.firmware_path);
         }
+
+        private int check_log()
+        {
+            int max_index = 0;
+            int max_test = 0;
+            byte[] apdu = new byte[2];
+            byte[] log = new byte[8];
+            apdu[0] = 0x19;
+            apdu[1] = 0x0f;//read
+            int[] used = new int[4];
+            byte[] data = new byte[1024 * 1024]; int data_len = 0;
+            int rtn = handle_cmd(apdu, apdu.Length, ref data, ref data_len, 0);
+            if (rtn != def.RTN_OK)
+            {
+                return rtn;
+           
+            }
+            for (int i = 0; i < 4; i++)
+            {
+                used[i] = 0;
+                for (int j = 0; j < 8; j++)
+                {
+                    if (data[i * 8 + j] != 0xff)
+                        used[i] = 1;
+                }
+                if (used[i] == 1)
+                {
+                    if (max_index < data[i * 8])
+                        max_index = data[i * 8];
+                }
+            }
+            if (max_index == 0)
+                return def.RTN_FAIL;//no log, fails
+
+            int offset = (max_index % 4) * 8;
+            if (data[offset + 1] == 1 && data[offset + 2] != 0)
+                return def.RTN_FAIL;//last log is test and fail, return fail
+
+            return def.RTN_OK;
+
+        }
+
+        private int enkidu_log(int bin)
+        {
+            int[] used = new int[4];
+            int max_index = 0;
+            byte[] apdu = new byte[2];
+            byte[] log = new byte[8];
+            apdu[0] = 0x19;
+            apdu[1] = 0x0f;//read
+            byte[] data = new byte[1024 * 1024]; int data_len = 0;
+            int rtn = handle_cmd(apdu, apdu.Length, ref data, ref data_len, 0);
+            if (rtn != def.RTN_OK)
+            {
+                return rtn;
+            }
+            for(int i=0;i<4;i++)
+            {
+                used[i] = 0;
+                for (int j=0; j<8; j++)
+                {
+                    if (data[i * 8 + j] != 0xff)
+                        used[i] = 1;
+                }
+                if(used[i]==1)
+                {
+                    if (max_index < data[i*8])
+                        max_index =  data[i*8];
+                }
+            }
+            log[0] = (byte)(max_index + 1);
+            if (config.test_only == 3)
+                log[1] = 2;
+            else
+                log[1] = 1;
+            log[2] = (byte)bin;
+            log[3] = (byte)DateTime.Now.Month; 
+            log[4] = (byte)DateTime.Now.Day; 
+            log[5] = (byte)DateTime.Now.Hour; 
+            log[6] = (byte)DateTime.Now.Minute; 
+            log[7] = (byte)DateTime.Now.Second;
+            int offset = (max_index % 4) * 8;
+
+            Buffer.BlockCopy(log,0,data, offset,8);
+            byte[] apdu2 = new byte[34];
+            apdu2[0] = 0x18;
+            apdu2[1] = 0x0f;//read
+            Buffer.BlockCopy(data, 0, apdu2, 2, 32);
+            byte[] data2 = new byte[1024 * 1024];
+            rtn = handle_cmd(apdu2, apdu2.Length, ref data2, ref data_len, 0);
+            if (rtn != def.RTN_OK)
+            {
+                return rtn;
+            }
+
+            return def.RTN_OK;
+        }
         private int enkidu_getversion()
         {
             byte[] apdu = { 0xfb };
@@ -108,18 +205,12 @@ namespace Garage_USB
             }
             ui_form.BeginInvoke(new ThreadStart(delegate ()
             {
-                //ui_form.lb_sn.Text = Encoding.UTF8.GetString(data.Take(data_len).ToArray());
                 ui_form.lb_noise.Text = "1";
             }));
             return def.RTN_OK;
         }
         public int enkidu_kill()
         {
-            if(ui_form.tb_admin.Text!="57625900")
-            {
-                call_fail(ui_form.g.BIN.BIN_CODE[34]);
-                return def.RTN_FAIL;
-            }
             reset_power();
             int rtn = ui_form.g.c.read_buffer();
             byte[] apdu = { 0x1A,0x01 };
@@ -227,7 +318,6 @@ namespace Garage_USB
             }
             ui_form.BeginInvoke(new ThreadStart(delegate ()
             {
-                //ui_form.lb_sn.Text = Encoding.UTF8.GetString(data.Take(data_len).ToArray());
                 ui_form.lb_sn.Text = bytetohex(data.Take(data_len).ToArray());
             }));
             return def.RTN_OK;
@@ -246,7 +336,6 @@ namespace Garage_USB
             }
             ui_form.BeginInvoke(new ThreadStart(delegate ()
             {
-                //ui_form.lb_sn.Text = Encoding.UTF8.GetString(data.Take(data_len).ToArray());
                 ui_form.lb_noise.Text = "1";
             }));
             return def.RTN_OK;
@@ -264,7 +353,6 @@ namespace Garage_USB
             }
             ui_form.BeginInvoke(new ThreadStart(delegate ()
             {
-                //ui_form.lb_sn.Text = Encoding.UTF8.GetString(data.Take(data_len).ToArray());
                 ui_form.lb_noise.Text = "1";
             }));
             return def.RTN_OK;
@@ -289,7 +377,7 @@ namespace Garage_USB
                     call_fail(ui_form.g.BIN.BIN_CODE[20]);
                     return def.RTN_TIMEOUT;
                 }
-                Thread.Sleep(16);
+                //Thread.Sleep(16);
                 rtn = handle_cmd(apdu_get, apdu_get.Length, ref get_res, ref get_len, 1);
                 if (rtn == 0x02)
                     continue;
@@ -405,24 +493,47 @@ namespace Garage_USB
             rtn = ui_form.g.c.read_buffer();
             Console.WriteLine("read buffer result " + rtn.ToString());
 
+            float[] cv3 = ui_form.g.con.fn_get_cv(3, 0);
+            ui_form.BeginInvoke(new ThreadStart(delegate ()
+            {
+                ui_form.lb_voltage.Text = Convert.ToInt32(cv3[1]).ToString();
+            }));
+
+            //goto ACTIVE;
             //goto TEST;
+            //goto DOWNLOAD;
+
             //check if there is bootloader device
             rtn = enkidu_cancel();
             Console.WriteLine("detect result "+ rtn.ToString());
             if (rtn== def.RTN_OK)
                 goto TEST;
             else if (rtn == def.RTN_TIMEOUT)
-                goto DOWNLOAD;
+            {
+                if(config.test_only==3)
+                {
+                    call_fail(ui_form.g.BIN.BIN_CODE[1]);
+                    return def.RTN_FAIL;
+                }
+                else
+                    goto DOWNLOAD;
+            } 
             else if(rtn==1)
-                goto ACTIVE;
+            {
+                if (config.test_only == 3)
+                {
+                    call_fail(ui_form.g.BIN.BIN_CODE[2]);
+                    return def.RTN_FAIL;
+                }else
+                    goto ACTIVE;
+            }
+                
             else
             {
                 call_fail(ui_form.g.BIN.BIN_CODE[31]);
                 return def.RTN_FAIL;
             }    
 
-            
-           
         DOWNLOAD:
             set_process(def.stage_download);
             if (enkidu_download()!=def.RTN_OK)
@@ -436,18 +547,18 @@ namespace Garage_USB
                 return def.RTN_FAIL;
             }
 
-
         ACTIVE:
 
             set_process(def.stage_restart);
             rtn = ui_form.g.c.read_buffer();
-            if (rtn != def.RTN_OK)
-            {
-                Console.WriteLine("read buffer result " + rtn.ToString());
-                call_fail(ui_form.g.BIN.BIN_CODE[1]);
-                return def.RTN_FAIL;
 
+            rtn = enkidu_cancel();
+            if (rtn == def.RTN_TIMEOUT)
+            { 
+               call_fail(ui_form.g.BIN.BIN_CODE[35]);
+               return def.RTN_FAIL;
             }
+
             int act_counter = 0;
             rtn = device.get_license_count(ref act_counter);
             if (rtn != def.RTN_OK)
@@ -492,8 +603,6 @@ namespace Garage_USB
             if (rtn != def.RTN_OK)
                 return rtn;
 
-
-            ui_form.g.c.open_port(config.working_port);
         TEST:
             set_process(def.stage_calibrate);
             Console.WriteLine("Getversion");
@@ -508,6 +617,17 @@ namespace Garage_USB
             rtn = enkidu_checksensor();
             if (rtn != def.RTN_OK)
                 return rtn;
+            if(config.test_only==3)
+            {
+                if (check_log() != def.RTN_OK)
+                {
+                    call_fail(36);
+                    return def.RTN_FAIL;
+                }
+                    
+                final_prime_work();
+                return def.RTN_OK;
+            }
             Console.WriteLine("set sleep");
             ui_form.set_process(def.stage_press);
             rtn = enkidu_setsleep();
@@ -527,6 +647,12 @@ namespace Garage_USB
             ui_form.ui_tr.Start();
            
             Console.WriteLine("Press finger!");
+            //close uA detect
+            ui_form.BeginInvoke(new ThreadStart(delegate ()
+            {
+                ui_form.lb_current.Text = "7";
+            }));
+            /*
             float[] cv = ui_form.g.con.fn_get_cv(1,1);
             ui_form.BeginInvoke(new ThreadStart(delegate ()
             {
@@ -536,14 +662,12 @@ namespace Garage_USB
             {
                 call_fail(ui_form.g.BIN.BIN_CODE[32]);
                 return rtn;
-            }
-
-
+            }*/
             rtn = ui_form.g.con.wait_touch_out(500);
             if (rtn == def.RTN_ON)//high at first
             {
-                call_fail(ui_form.g.BIN.BIN_CODE[18]);
-                return rtn;
+               // call_fail(ui_form.g.BIN.BIN_CODE[18]);
+               // return rtn;
             }
             else if (rtn == def.RTN_TIMEOUT)//no response
             {
@@ -592,6 +716,7 @@ namespace Garage_USB
                 return rtn;
 
             final_prime_work();
+            //goto TEST;
             return def.RTN_OK;
         }
         int prime_dispatch(int func, int p1)
@@ -651,6 +776,9 @@ namespace Garage_USB
             ui_form.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
                 ui_form.g.call_fail(code);
+                ui_form.g.con.switch_control((int)control.COMMAND.POWER_MCU, (int)control.MODE.UP);
+                Thread.Sleep(100);
+                enkidu_log(code);
                 ui_form.lb_err_message.Text = ui_form.g.BIN.message(code);
                 ui_form.g.con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
                 ui_form.g.con.switch_control((int)control.COMMAND.POWER_MCU, (int)control.MODE.DOWN);
@@ -678,9 +806,11 @@ namespace Garage_USB
         }
         public void final_prime_work()
         {
+            enkidu_log(0);
             ui_form.set_process(def.stage_result);
             ui_form.set_process(def.stage_result_ok);
             prime_dispatch(def.FUNC_FINAL, 0);
+            
             ui_form.BeginInvoke(new System.Threading.ThreadStart(delegate ()
             {
                 ui_form.lb_pf.Text = ui_form.g.ram_counter_good.ToString() + "/" + ui_form.g.ram_counter_bad.ToString();
@@ -688,8 +818,10 @@ namespace Garage_USB
             }));
             ui_form.count_tr.Start();
             ui_form.done_counter = 0;
+            ui_form.g.con.switch_control((int)control.COMMAND.POWER, (int)control.MODE.DOWN);
+            ui_form.g.con.switch_control((int)control.COMMAND.POWER_MCU, (int)control.MODE.DOWN);
 
-            Thread.Sleep(4500);
+            Thread.Sleep(3500);
             ui_form.set_process(def.stage_start);
             ui_form.init_tips();
             ui_form.init_lbs();

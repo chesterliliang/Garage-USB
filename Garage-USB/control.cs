@@ -458,7 +458,6 @@ namespace Garage_USB
                 }
                     
             }
-
             if (got == 1)
                 return def.RTN_OK;
 

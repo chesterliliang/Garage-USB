@@ -74,6 +74,7 @@ namespace Garage_USB
         public const int FUNC_SINGAL = 10 ;
         public const int FUNC_FINAL = 11;
         public const int FUNC_POWER_DOWN = 12;
+        public const int FUNC_IMAGE= 13;
 
     }
 }

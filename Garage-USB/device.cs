@@ -253,5 +253,18 @@ namespace Garage_USB
             
             
         }
+
+        [DllImport("./bin/product.dll", EntryPoint = "PAPRO_GetImage", CallingConvention = CallingConvention.Cdecl)]
+        public static extern unsafe int PAPRO_GetImage(byte[] bgimg, ref int len);
+
+        public static int get_img(byte[] bgimg, ref int len)
+        {
+            int rtn = ERR_FAIL;
+            Console.WriteLine("enter get_img!");
+            rtn = PAPRO_GetImage(bgimg, ref len);
+            Console.WriteLine("leave get_img! rv = 0x" + String.Format("{0:X000}", rtn));
+            return rtn;
+        }
+
     }
 }

@@ -102,7 +102,7 @@ namespace Garage_USB
             if (max_index == 0)
                 return def.RTN_FAIL;//no log, fails
 
-            int offset = (max_index % 4) * 8;
+            int offset = ((max_index-1) % 4) * 8;
             if (data[offset + 1] == 1 && data[offset + 2] != 0)
                 return def.RTN_FAIL;//last log is test and fail, return fail
 

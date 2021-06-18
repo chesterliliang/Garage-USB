@@ -376,7 +376,7 @@ namespace Garage_USB
                 goto ACTIVE_END;
             }
             rtn = device.disconnect();
-            rtn = device.set_sn_activiate(device.gen_sn(config.station, config.keycode), config.dev_type, config.working_port);
+            rtn = device.set_sn_activiate(device.gen_sn(config.station, config.keycode), config.dev_type,null);
             if (rtn == def.RTN_OK)
             {
                 active_opt_done = 1;
@@ -616,6 +616,24 @@ namespace Garage_USB
             avg = fpimage.merge_frames(frame10, count, avg_frame);
             await = 0;
             return def.RTN_OK;   
+        }
+
+        public int prime_get_image()
+        {
+            int rtn = def.RTN_FAIL;
+            int len = 0;
+            Console.WriteLine("enter prime_get_image");
+            avg_frame = new byte[config.sensor_width * config.sensor_height];
+
+            rtn = device.get_img(avg_frame,ref len);
+            if (rtn != device.ERR_OK)
+            {
+                Console.WriteLine("capture_frame failed");
+                await = 0;
+                return BIN.BIN_CODE[10];
+             }
+            await = 0;
+            return def.RTN_OK;
         }
         public int prime_signal(int gain)
         {

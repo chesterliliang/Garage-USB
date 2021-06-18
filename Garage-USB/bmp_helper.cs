@@ -34,8 +34,8 @@ namespace Garage_USB
             {
                 img_preview.Width = config.sensor_width * 2;
                 img_preview.Height = config.sensor_height * 2;
-                img_preview.Left = 100;
-                img_preview.Top = 100;
+                img_preview.Left = 35;
+                img_preview.Top = 93;
 
             }
             else if (config.sensor_width == 103)

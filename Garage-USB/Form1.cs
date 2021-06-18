@@ -205,8 +205,8 @@ namespace Garage_USB
             init_ui_list();
             
             int rtn = auto_com();
-            if (rtn == def.RTN_FAIL)
-                return;
+           // if (rtn == def.RTN_FAIL)
+           //     return;
             g.control_init();
             g.working_com_init();
 
@@ -344,6 +344,9 @@ namespace Garage_USB
                     case def.FUNC_POWER_DOWN:
                         rtn = g.prime_power_down();
                         break;
+                    case def.FUNC_IMAGE:
+                        rtn = g.prime_get_image();
+                        break;
                     default:
                         break;
                 }
@@ -409,6 +412,12 @@ namespace Garage_USB
 
             init_prime_work();
 
+            rtn = prime_dispatch(def.FUNC_POWER_DOWN, 0);
+            if (rtn != def.RTN_OK)
+                return rtn;
+
+            Thread.Sleep(500);
+
             rtn = prime_dispatch(def.FUNC_POWER_UP, def.FIRST_POWER_UP);
             if (rtn != def.RTN_OK)
                 return rtn;
@@ -453,17 +462,29 @@ namespace Garage_USB
             rtn = prime_dispatch(def.FUNC_POWER_DOWN, 0);
             if (rtn != def.RTN_OK)
                 return rtn;
-            Thread.Sleep(3000);// powerup need time to calirate otherwise current will go high
+            //Thread.Sleep(3000);// powerup need time to calirate otherwise current will go high
             //download_calibrate = 1;
             rtn = prime_dispatch(def.FUNC_POWER_UP, def.SECOND_POWER_UP);
             if (rtn != def.RTN_OK)
             {
                 return rtn;
             }
-
+            Thread.Sleep(1000);// powerup need time to calirate otherwise current will go high
             g.prime_wait_device(3);
 
         ACTIVE:
+            int act_counter = 0;
+            rtn = device.get_license_count(ref act_counter);
+            if (rtn != def.RTN_OK)
+            {
+                call_fail(g.BIN.BIN_CODE[27]);
+                return rtn;
+            }
+            BeginInvoke(new System.Threading.ThreadStart(delegate ()
+            {
+                lb_act_count.Text = act_counter.ToString();
+            }));
+
             if (config.test_only == 3)
             {
                 call_fail(g.BIN.BIN_CODE[2]);
@@ -567,7 +588,13 @@ namespace Garage_USB
             if(config.simple_test == 0)
                 rtn = prime_dispatch(def.FUNC_FRAME, 10);
             else
-                rtn = prime_dispatch(def.FUNC_FRAME, 1);
+            {
+                if(config.keycode=="3220")
+                    rtn = prime_dispatch(def.FUNC_IMAGE, 0);
+                else
+                    rtn = prime_dispatch(def.FUNC_FRAME, 1);
+            }
+               
             if (rtn != def.RTN_OK)
                 goto LB_TR_END;
 
